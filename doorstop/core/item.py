@@ -736,7 +736,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     child_links = property(find_child_links)
 
-    def find_child_items(self, find_all=True):
+    def find_child_items(self, **kwargs):
         """Get a list of items that link to this item.
 
         :param find_all: find all items (not just the first) before returning
@@ -744,7 +744,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :return: list of found items
 
         """
-        items, _ = self._find_child_objects(find_all=find_all)
+        items, _ = self._find_child_objects(**kwargs)
         return items
 
     child_items = property(find_child_items)
@@ -760,7 +760,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     child_documents = property(find_child_documents)
 
-    def _find_child_objects(self, document=None, tree=None, find_all=True):
+    def _find_child_objects(self, document=None, tree=None, find_all=True,grandchildren=False):
         """Get lists of child items and child documents.
 
         :param document: document containing the current item
@@ -772,6 +772,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         child_items = []
         child_documents = []
+        multilevel_child_prefixes=[]
         document = document or self.document
         tree = tree or self.tree
         if not document or not tree:
@@ -779,8 +780,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Find child objects
         log.debug("finding item {}'s child objects...".format(self))
         for document2 in tree:
-            if document2.parent == document.prefix:
+            if grandchildren:
+                child_bool = (document2.parent == document.prefix)|(document2.parent in multilevel_child_prefixes)
+            else:
+                child_bool = (document2.parent == document.prefix)
+            if child_bool:
                 child_documents.append(document2)
+                multilevel_child_prefixes.append(document2.prefix)
+
                 # Search for child items unless we only need to find one
                 if not child_items or find_all:
                     for item2 in document2:
