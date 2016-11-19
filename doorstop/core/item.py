@@ -722,7 +722,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
-    def find_child_links(self, find_all=True):
+    def find_child_links(self, **kwargs):
         """Get a list of item UIDs that link to this item (reverse links).
 
         :param find_all: find all items (not just the first) before returning
@@ -730,7 +730,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :return: list of found item UIDs
 
         """
-        items, _ = self._find_child_objects(find_all=find_all)
+        items, _ = self._find_child_objects(**kwargs)
         identifiers = [item.uid for item in items]
         return identifiers
 
