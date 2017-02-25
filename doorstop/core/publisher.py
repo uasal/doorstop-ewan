@@ -243,6 +243,7 @@ def _lines_text(obj, indent=8, width=79, **_):
                     label = "Links: "
                 slinks = label + ', '.join(str(l) for l in item.links)
                 yield from _chunks(slinks, width, indent)
+          
             if settings.PUBLISH_CHILD_LINKS:
                 if settings.PUBLISH_GRANDCHILD_LINKS:
                     links = item.find_child_links(grandchildren=True)
@@ -294,7 +295,11 @@ def _lines_markdown(obj, linkify=False):
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
-            # Text
+            if item._data['short name']:
+                    yield ""  # break before name
+                    yield from  item._data['short name'].splitlines()
+                    yield ""  # break after name
+# Text
             if item.text:
                 yield ""  # break before text
                 yield from item.text.splitlines()
@@ -304,6 +309,11 @@ def _lines_markdown(obj, linkify=False):
                 yield ""  # break before reference
                 yield _format_md_ref(item)
 
+            if item._data['rationale']:
+                if settings.PUBLISH_CHILD_LINKS:
+                    yield ""  # break before reference
+                    yield "*Rationale:*"  # break before text
+                    yield from item._data['rationale'].splitlines()
             # Parent links
             if item.links:
                 yield ""  # break before links
@@ -328,7 +338,7 @@ def _lines_markdown(obj, linkify=False):
                     links = _format_md_links(items2, linkify)
                     label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
-
+                    
         yield ""  # break between items
 
 
