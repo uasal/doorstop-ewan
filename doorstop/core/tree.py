@@ -510,6 +510,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             # Recurse to the next parent/child item
             if parent:
                 items = item.parent_items
+                if item in items:
+                    raise ValueError(str(item) + ' refers to itself')
                 for item2 in items:
                     yield from self._iter_rows(item2, mapping,
                                                child=False, row=row)
