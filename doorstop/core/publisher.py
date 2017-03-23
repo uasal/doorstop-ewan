@@ -297,7 +297,7 @@ def _lines_markdown(obj, linkify=False):
 
             if item._data['short name']:
                     yield ""  # break before name
-                    yield from  item._data['short name'].splitlines()
+                    yield from  ("*"+item._data['short name']+"*").splitlines()
                     yield ""  # break after name
 # Text
             if item.text:
