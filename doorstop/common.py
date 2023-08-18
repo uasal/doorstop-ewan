@@ -124,7 +124,7 @@ def load_yaml(text, path):
     """
     # Load the YAML data
     try:
-        data = yaml.load(text) or {}
+        data = yaml.safe_load(text) or {}
     except yaml.error.YAMLError as exc:
         msg = "invalid contents: {}:\n{}".format(path, exc)
         raise DoorstopError(msg) from None
