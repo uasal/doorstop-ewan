@@ -273,6 +273,7 @@ def _lines_markdown(obj, linkify=False):
     :return: iterator of lines of text
 
     """
+
     for item in iter_items(obj):
 
         heading = '#' * item.depth
@@ -281,7 +282,9 @@ def _lines_markdown(obj, linkify=False):
         if item.heading:
 
             # Level and Text
-            standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            # standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text) # original
+            # remove  level from title
+            standard = "{h} {t}".format(h=heading, t=item.text)
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
@@ -289,7 +292,10 @@ def _lines_markdown(obj, linkify=False):
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h} {l} {u}".format(h=heading, l=level, u=item.uid)
+                # Level and Text
+                # standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text) # original
+                # remove  level from title
+                standard = "{h} {u}".format(h=heading, u=item.uid)
             else:
                 standard = "{h} {u}".format(h=heading, u=item.uid)
             attr_list = _format_md_attr_list(item, linkify)
@@ -309,6 +315,12 @@ def _lines_markdown(obj, linkify=False):
                 yield ""  # break before reference
                 yield _format_md_ref(item)
 
+            if 'owner(s)' in item._data.keys():
+                if item._data['owner(s)']:
+                    if settings.PUBLISH_CHILD_LINKS:
+                        yield ""  # break before reference
+                        yield "*Owner(s):*"  # break before text
+                        yield from item._data['owner(s)'].splitlines()
             if item._data['rationale']:
                 if settings.PUBLISH_CHILD_LINKS:
                     yield ""  # break before reference
