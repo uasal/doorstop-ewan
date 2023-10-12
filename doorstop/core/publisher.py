@@ -331,6 +331,12 @@ def _lines_markdown(obj, linkify=False):
                     yield ""  # break before reference
                     yield "*Verification plan:*"  # break before text
                     yield from item._data['verification plan'].splitlines()
+            if 'notes' in item._data.keys():
+                if item._data['notes']:
+                    if settings.PUBLISH_CHILD_LINKS:
+                        yield ""  # break before reference
+                        yield "*Notes:*"  # break before text
+                        yield from item._data['notes'].splitlines()
             # Parent links
             if item.links:
                 yield ""  # break before links
