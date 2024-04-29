@@ -1,10 +1,12 @@
 active: true
 derived: false
+header: |
+  Importing content
 level: 2.4
 links: []
 normative: true
 ref: ''
-reviewed: 2fd649aad454e1495812f816fcd656d1
+reviewed: y2OYEsfH2SeMgox69qRaoF8vq2C9JtR5eJ-0wXXIBJI=
 text: |
   Doorstop **shall** be able to import content from other requirments
   management tools.

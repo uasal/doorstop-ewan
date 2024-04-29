@@ -3,25 +3,27 @@
 *.egg-info
 __pycache__
 .ipynb_checkpoints
+setup.py
 
 # Temporary OS files
 Icon*
 
 # Temporary virtual environment files
-.cache
-/env
+/.cache/
+/.venv/
+/.python-version
 
 # Temporary server files
 .env
 *.pid
 
 # Generated documentation
-/docs/gen
-/apidocs
-/site
+/docs/gen/
+/docs/apidocs/
+/site/
 /*.html
-/*.rst
 /docs/*.png
+texput.log
 
 # Google Drive
 *.gdoc
@@ -30,17 +32,20 @@ Icon*
 *.gdraw
 
 # Testing and coverage results
-.cache
-.pytest
-.coverage
-.coverage.*
-/htmlcov
+/.coverage
+/.coverage.*
+/htmlcov/
+/xmlreport/
 /pyunit.xml
+/tmp/
 *.tmp
+coverage.xml
 
 # Build and release directories
-/build
-/dist
+/build/
+/dist/
+*.spec
+**/MathJax
 
 # Sublime Text
 *.sublime-workspace

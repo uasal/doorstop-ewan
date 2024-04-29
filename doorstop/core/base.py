@@ -1,113 +1,125 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Base classes and decorators for the doorstop.core package."""
 
-import os
 import abc
 import functools
+import os
+from typing import Dict
 
 import yaml
 
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop import settings
+from doorstop import common, settings
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 
 log = common.logger(__name__)
 
 
 def add_item(func):
-    """Decorator for methods that return a new item."""
+    """Add and cache the returned item."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to add and cache the returned item."""
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.add(item.path)
         # pylint: disable=W0212
-        if item.document and item not in item.document._items:
+        if item not in item.document._items:
             item.document._items.append(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.uid] = item
-            log.trace("cached item: {}".format(item))
+            log.trace("cached item: {}".format(item))  # type: ignore
         return item
+
     return wrapped
 
 
 def edit_item(func):
-    """Decorator for methods that return a modified item."""
+    """Mark the returned item as modified."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to mark the returned item as modified."""
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.edit(item.path)
         return item
+
     return wrapped
 
 
 def delete_item(func):
-    """Decorator for methods that return a deleted item."""
+    """Remove and expunge the returned item."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to remove and expunge the returned item."""
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.delete(item.path)
         # pylint: disable=W0212
-        if item.document and item in item.document._items:
+        if item in item.document._items:
             item.document._items.remove(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.uid] = None
-            log.trace("expunged item: {}".format(item))
+            log.trace("expunged item: {}".format(item))  # type: ignore
         BaseFileObject.delete(item, item.path)
         return item
+
     return wrapped
 
 
 def add_document(func):
-    """Decorator for methods that return a new document."""
+    """Add and cache the returned document."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to add and cache the returned document."""
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.add(document.config)
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = document
-            log.trace("cached document: {}".format(document))
+            log.trace("cached document: {}".format(document))  # type: ignore
         return document
+
     return wrapped
 
 
 def edit_document(func):
-    """Decorator for methods that return a modified document."""
+    """Mark the returned document as modified."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to mark the returned document as modified."""
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.edit(document.config)
         return document
+
     return wrapped
 
 
 def delete_document(func):
-    """Decorator for methods that return a deleted document."""
+    """Remove and expunge the returned document."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to remove and expunge the returned document."""
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
-            document.tree.vcs.delete(document.path)
+            document.tree.vcs.delete(document.config)
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = None
-            log.trace("expunged document: {}".format(document))
-        BaseFileObject.delete(document, document.path)
+            log.trace("expunged document: {}".format(document))  # type: ignore
+        try:
+            os.rmdir(document.path)
+        except OSError:
+            # Directory wasn't empty
+            pass
         return document
+
     return wrapped
 
 
-class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+class BaseValidatable(metaclass=abc.ABCMeta):
     """Abstract Base Class for objects that can be validated."""
 
     def validate(self, skip=None, document_hook=None, item_hook=None):
@@ -123,8 +135,9 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         valid = True
         # Display all issues
-        for issue in self.get_issues(skip=skip, document_hook=document_hook,
-                                     item_hook=item_hook):
+        for issue in self.get_issues(
+            skip=skip, document_hook=document_hook, item_hook=item_hook
+        ):
             if isinstance(issue, DoorstopInfo) and not settings.WARN_ALL:
                 log.info(issue)
             elif isinstance(issue, DoorstopWarning) and not settings.ERROR_ALL:
@@ -158,28 +171,30 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
 
 def auto_load(func):
-    """Decorator for methods that should automatically load from file."""
+    """Call self.load() before execution."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to call self.load() before execution."""
         self.load()
         return func(self, *args, **kwargs)
+
     return wrapped
 
 
 def auto_save(func):
-    """Decorator for methods that should automatically save to file."""
+    """Call self.save() after execution."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to call self.save() after execution."""
         result = func(self, *args, **kwargs)
         if self.auto:
             self.save()
         return result
+
     return wrapped
 
 
-class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+class BaseFileObject(metaclass=abc.ABCMeta):
     """Abstract Base Class for objects whose attributes save to a file.
 
     For properties that are saved to a file, decorate their getters
@@ -192,7 +207,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def __init__(self):
         self.path = None
         self.root = None
-        self._data = {}
+        self._data: Dict[str, str] = {}
         self._exists = True
         self._loaded = False
 
@@ -206,7 +221,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         return not self == other
 
     @staticmethod
-    def _create(path, name):  # pragma: no cover (integration test)
+    def _create(path, name):
         """Create a new file for the object.
 
         :param path: path to new file
@@ -222,7 +237,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         common.touch(path)
 
     @abc.abstractmethod
-    def load(self, reload=False):  # pragma: no cover (abstract method)
+    def load(self, reload=False):
         """Load the object's properties from its file."""
         # 1. Start implementations of this method with:
         if self._loaded and not reload:
@@ -231,7 +246,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         # 3. End implementations of this method with:
         self._loaded = True
 
-    def _read(self, path):  # pragma: no cover (integration test)
+    def _read(self, path):
         """Read text from the object's file.
 
         :param path: path to a text file
@@ -245,7 +260,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         return common.read_text(path)
 
     @staticmethod
-    def _load(text, path):
+    def _load(text, path, **kwargs):
         """Load YAML data from text.
 
         :param text: text read from a file
@@ -254,17 +269,17 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :return: dictionary of YAML data
 
         """
-        return common.load_yaml(text, path)
+        return common.load_yaml(text, path, **kwargs)
 
     @abc.abstractmethod
-    def save(self):  # pragma: no cover (abstract method)
+    def save(self):
         """Format and save the object's properties to its file."""
         # 1. Call self._write() with the current properties here
         # 2. End implementations of this method with:
         self._loaded = False
         self.auto = True
 
-    def _write(self, text, path):  # pragma: no cover (integration test)
+    def _write(self, text, path):
         """Write text to the object's file.
 
         :param text: text to write to a file
@@ -273,7 +288,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        common.write_text(text, path)
+        common.write_text(text, path, end=settings.WRITE_LINESEPERATOR)
 
     @staticmethod
     def _dump(data):
@@ -291,12 +306,13 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     @property
     def relpath(self):
         """Get the item's relative path string."""
+        assert self.path
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
 
     # extended attributes ####################################################
 
-    @property
+    @property  # type: ignore
     @auto_load
     def extended(self):
         """Get a list of all extended attribute names."""
@@ -319,7 +335,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            log.trace(msg)
+            log.trace(msg)  # type: ignore
             return getattr(self, name)
         else:
             return self._data.get(name, default)
@@ -336,8 +352,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            log.trace(msg)
-            return setattr(self, name, value)
+            log.trace(msg)  # type: ignore
+            setattr(self, name, value)
         else:
             self._data[name] = value
 
@@ -346,7 +362,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def delete(self, path):
         """Delete the object's file from the file system."""
         if self._exists:
-            log.info("deleting {}...".format(self))
+            log.info("deleting {}...".format(path))
             common.delete(path)
             self._loaded = False  # force the object to reload
             self._exists = False  # but, prevent future access
