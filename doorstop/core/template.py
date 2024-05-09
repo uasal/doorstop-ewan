@@ -46,7 +46,7 @@ def get_template(obj, path, ext, template):
         path = os.path.dirname(path)
     # If html, add documents to path.
     if ext == ".html":
-        assets_dir = os.path.join(path, "documents", Document.ASSETS)
+        assets_dir = os.path.join(path, "Documents", Document.ASSETS)
     else:
         assets_dir = os.path.join(path, Document.ASSETS)
     template_dir = os.path.join(path, "template")
