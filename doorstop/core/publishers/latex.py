@@ -34,6 +34,7 @@ class LaTeXPublisher(BasePublisher):
         super().__init__(obj, ext)
         self.END_LONGTABLE = "\\end{longtable}"
         self.HLINE = "\\hline"
+        self.END_TABULAR = "\\end{tabular}"
         self.compile_files = []
         self.compile_path = ""
         # Define lists.
@@ -121,7 +122,7 @@ class LaTeXPublisher(BasePublisher):
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
                     if item.header:
-                        uid = "{h}{{ - \\small{{}}\\texttt{{}}{u}}}".format(
+                        uid = "{h}{{ - {u}}}".format(
                             h=_latex_convert(item.header), u=item.uid
                         )
                     else:
@@ -182,10 +183,13 @@ class LaTeXPublisher(BasePublisher):
                         if not header_printed:
                             header_printed = True
                             yield "\\begin{longtable}{|l|l|}"
-                            yield "Attribute & Value\\\\"
+                            yield "\\setlength{\\LTleft}{0pt}"
+                            yield "\\begin{tabular}{p{0.2\\linewidth} | p{0.70\\linewidth}}"
+                            yield "Attribute & Values\\\\"
                             yield self.HLINE
-                        yield "{} & {}".format(attr, item.attribute(attr))
+                        yield "{} & {} \\\\".format(attr, item.attribute(attr))
                     if header_printed:
+                        yield self.END_TABULAR
                         yield self.END_LONGTABLE
                     else:
                         yield ""
