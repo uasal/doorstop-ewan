@@ -8,6 +8,8 @@ usepackage:
     - utf8
   amsmath:
   ulem:
+  ragged2e:
+  tabularx:
   longtable:
   fancyvrb:
   xr-hyper:
@@ -19,7 +21,7 @@ usepackage:
   zref-xr:
 # Define custom lines before \begin{document}
 before_begin_document:
-  - \def\docname{Doorstop - \doccategory{}}
+  - \def\docname{Pearl Requirements - \doccategory{}}
 # Define custom lines after \begin{document}
 after_begin_document:
   - \maketitle
