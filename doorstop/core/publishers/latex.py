@@ -776,6 +776,6 @@ class LaTeXPublisher(BasePublisher):
         common.write_lines(wrapper, wrapperPath, end=settings.WRITE_LINESEPERATOR)
 
         # Add to compile.sh as return value.
-        return "pdflatex -halt-on-error -shell-escape {n}.tex".format(
+        return "xelatex -interaction=nonstopmode {n}.tex".format(
             n=doc_attributes["name"]
         )
