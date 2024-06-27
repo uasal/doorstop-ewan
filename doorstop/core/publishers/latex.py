@@ -358,6 +358,7 @@ class LaTeXPublisher(BasePublisher):
                 split_line_text = line.split("[")
                 # Text before the link
                 text = str(split_line_text[0])
+                text = text.replace("_", "\_")
                 # Rest of line / unformatted with no text part
                 remainder = str(split_line_text[1])
                 split_link_prefix = remainder.split("](")
@@ -366,16 +367,19 @@ class LaTeXPublisher(BasePublisher):
                 url_prefix = "{" + str(split_link_prefix[0]) + "}"
                 link = "{" + str(split_link[0]) + "}"
                 url_prefix = url_prefix.replace("_", "\_")
-                rest_text = str(split_link[1])
+                rest_text = str(split_link[1]).replace("_", "\_")
                 output_line = text + "\href" + link + url_prefix + rest_text
                 yield output_line
-            elif "<br>" in line:
-                output_line = line.replace("_", "\_").replace("^", "\^")
-                output_line = line.split("<br><br>")
+            elif "<br> <br>" in line:
                 output_line = line.split("<br> <br>")
-                yield str(output_line[0])
+                yield str(output_line[0]).replace("^", "\^").replace("_", "\_")
                 yield ""
-                yield str(output_line[1])
+                yield str(output_line[1]).replace("^", "\^").replace("_", "\_")
+            elif "<br><br>" in line:
+                output_line = line.split("<br><br>")
+                yield str(output_line[0]).replace("^", "\^").replace("_", "\_")
+                yield ""
+                yield str(output_line[1]).replace("^", "\^").replace("_", "\_")
             else:
                 output_line = line.replace("_", "\_").replace("^", "\^")
                 yield output_line
