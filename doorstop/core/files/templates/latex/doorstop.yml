@@ -8,11 +8,20 @@ usepackage:
     - utf8
   amsmath:
   ulem:
+  url:
+  titletoc:
   ragged2e:
   tabularx:
   longtable:
+  lastpage:
   fancyvrb:
+  textalpha:
+  fontenc:
+  unicode-math:
   xr-hyper:
+  microtype:
+  gitinfo2:
+  silence:
   hyperref:
     # Options are defined as sub-lists.
     - unicode
@@ -21,8 +30,22 @@ usepackage:
   zref-xr:
 # Define custom lines before \begin{document}
 before_begin_document:
-  - \def\docname{Pearl Requirements - \doccategory{}}
+  - \def\docname{Pearl Requirements}
+  - \def\repourl{https://github.com/uasal/pearl_requirements}
+  - \def\repo{\href{\repourl}{GitHub Repo}}
+  - \def\access{For access to the repository contact douglase@arizona.edu}
+  - \def\docdef{Descriptions, Owners, Rationales, and Notes}
+  - \def\authors{Kyle Van Gorkom, Ariel Shaver, Douglas M. Kelly, Ewan S. Douglas}
+  - \def\contributors{Roger Angel, Laird Close, Victor Gasho, Lori Harrison, Jared Males, Buddy Martin, Manny Montoya, et al.}
+# For appending graphics only before the end of the document
+include_graphics:
+  Digraph_gv.png:
+    - Requirement Flow
+  subgraphs.png:
+    - Requirement Connections
 # Define custom lines after \begin{document}
 after_begin_document:
   - \maketitle
   - \maketoc
+
+
