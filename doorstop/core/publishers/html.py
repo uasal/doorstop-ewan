@@ -59,10 +59,10 @@ class HtmlPublisher(MarkdownPublisher):
         # Check if path ends with .html
         if path.endswith(".html"):
             # Split of the filename and add 'documents/' to the path.
-            documentPath = os.path.join(os.path.dirname(path), "Documents")
+            documentPath = os.path.join(os.path.dirname(path), "documents")
         else:
             # Add 'documents/' to the path.
-            documentPath = os.path.join(path, "Documents")
+            documentPath = os.path.join(path, "documents")
         # Create the document directory if it does not exist.
         if not os.path.exists(documentPath):
             os.makedirs(documentPath)
@@ -83,7 +83,7 @@ class HtmlPublisher(MarkdownPublisher):
         """
         # Get paths for the index index
         filenames = []
-        tmpPath = os.path.join(directory, "Documents")
+        tmpPath = os.path.join(directory, "documents")
         if os.path.exists(tmpPath):
             for filename in os.listdir(tmpPath):
                 if filename.endswith(extensions) and filename != INDEX:
@@ -135,7 +135,7 @@ class HtmlPublisher(MarkdownPublisher):
         yield "<ul>"
         for filename in filenames:
             name = os.path.splitext(filename)[0]
-            yield '<li> <a href="Documents/{f}">{n}</a> </li>'.format(
+            yield '<li> <a href="documents/{f}">{n}</a> </li>'.format(
                 f=filename, n=name
             )
         yield "</ul>"
@@ -228,7 +228,7 @@ class HtmlPublisher(MarkdownPublisher):
         yield "<thead>"
         yield "<tr>"
         for document in self.object:  # pylint: disable=not-an-iterable
-            link = '<a href="Documents/{p}.html">{p}</a>'.format(p=document.prefix)
+            link = '<a href="documents/{p}.html">{p}</a>'.format(p=document.prefix)
             yield ('  <th scope="col">{link}</th>'.format(link=link))
         yield "</tr>"
         yield "</thead>"
@@ -255,7 +255,7 @@ class HtmlPublisher(MarkdownPublisher):
             if is_doc:
                 tmpRef = ""
             else:
-                tmpRef = "Documents/"
+                tmpRef = "documents/"
             if item.header:
                 link = '<a href="{r}{p}.html#{u}">{u} {h}</a>'.format(
                     u=item.uid, h=item.header, p=item.document.prefix, r=tmpRef
