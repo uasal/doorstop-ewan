@@ -205,6 +205,13 @@ def _create(subs, shared):
         help="item file format",
     )
     sub.add_argument(
+        "-attr",
+        "--attributes",
+        choices=["verification-plan", "notes", "owner(s)", "tags", "mission-success-criteria"],
+        default="notes",
+        help="additional attributes to publish",
+    )
+    sub.add_argument(
         "-d",
         "--digits",
         help="number of digits in item UIDs",
