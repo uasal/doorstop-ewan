@@ -39,7 +39,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     DEFAULT_PREFIX = Prefix("REQ")
     DEFAULT_SEP = ""
-    DEFAULT_DIGITS = 3
+    DEFAULT_DIGITS = 4
+    DEFAULT_ATTRIBUTES_PUBLISH = ['verification plan', 'owner(s)', 'rationale', 'mission success criteria']
 
     def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
@@ -61,7 +62,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.auto = kwargs.get("auto", Document.auto)
         # Set default values
         self._attribute_defaults = None
-        self._attribute_publish = None
+        self._attribute_publish = Document.DEFAULT_ATTRIBUTES_PUBLISH
         self._data["prefix"] = Document.DEFAULT_PREFIX
         self._data["sep"] = Document.DEFAULT_SEP
         self._data["digits"] = Document.DEFAULT_DIGITS  # type: ignore
@@ -72,6 +73,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._itered = False
         self.children: List[Document] = []
 
+        #if not self._data["attributes_publish"]:
+        #    self._data["attributes_publish"] = Item.DEFAULT_ATTRIBUTES_PUBLISH
         if not self._data["itemformat"]:
             self._data["itemformat"] = Item.DEFAULT_ITEMFORMAT
 
@@ -106,9 +109,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         parent=None,
         auto=None,
         itemformat=None,
+        attribute_publish=None,
+
     ):  # pylint: disable=R0913,C0301
         """Create a new document.
 
+        :param attribute_publish: additional attributes to publish
         :param tree: reference to tree that contains this document
 
         :param path: path to directory for the new document
@@ -154,6 +160,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         )
         document.parent = (  # type: ignore
             parent if parent is not None else document.parent
+        )
+        document.attribute_publish = (
+            attribute_publish if attribute_publish is not None else document._attribute_publish
         )
         if auto or (auto is None and Document.auto):
             document.save()
@@ -255,6 +264,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             attributes["defaults"] = self._attribute_defaults
         if self._extended_reviewed:
             attributes["reviewed"] = self._extended_reviewed
+        if self._attribute_publish:
+            attributes["publish"] = self._attribute_publish
         if attributes:
             data["attributes"] = attributes
         # Dump the data to YAML
@@ -418,6 +429,19 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def itemformat(self):
         """Get storage format for item files."""
         return self._data["itemformat"]
+
+    @property
+    @auto_load
+    def attributes_publish(self):
+        """Get the publish attributes."""
+        return self._data["attributes_publish"]
+
+    @attributes_publish.setter
+    @auto_save
+    @auto_load
+    def attributes_publish(self, value):
+        """Set the publish attributes."""
+        self._data["attributes_publish"] = value
 
     @property
     def items(self):
