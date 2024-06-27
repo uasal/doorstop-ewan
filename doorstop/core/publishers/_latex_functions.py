@@ -46,8 +46,10 @@ def _latex_convert(line):
     line = re.sub("__(.*?)__", "\\\\textbf{\\1}", line)
     # Replace *.
     line = re.sub("\\*(.*?)\\*", "\\\\textit{\\1}", line)
-    # Replace _.
-    line = re.sub(r"_(?<!\\_)(.*?)_(?<!\\_)", "\\\\textit{\\1}", line)
+    # Replace math symbols with $_ instead for latex processing.
+    #line = line.replace(">", "$>").replace("<", "$<").replace("^", "$^").replace("_", "\_")
+    # Replace _. ### **This creates an issue with the beamer for latex for urls.**
+    #line = re.sub(r"_(?<!\\_)(.*?)_(?<!\\_)", "\\\\textit{\\1}", line)
     # Replace ~~.
     line = re.sub("~~(.*?)~~", "\\\\sout{\\1}", line)
     #############################
@@ -73,6 +75,7 @@ def _latex_convert(line):
     line = re.sub("## (.*)", "\\\\subsection" + star + "{\\1}", line)
     # Replace #.
     line = re.sub("# (.*)", "\\\\section" + star + "{\\1}", line)
+
     return line
 
 
