@@ -20,6 +20,7 @@ from doorstop.core.publishers.base import (
     BasePublisher,
     extract_prefix,
     get_document_attributes,
+    format_level,
 )
 from doorstop.core.template import check_latex_template_data, read_template_data
 from doorstop.core.types import is_item, iter_documents, iter_items
@@ -94,9 +95,42 @@ class LaTeXPublisher(BasePublisher):
 
         """
         linkify = kwargs.get("linkify", False)
+        item_count = 0
+        prev_level = ""
+        sub_category = ""
+        prev_category = ""
+        prev_subcategory = ""
+
         for item in iter_items(obj):
-            heading = "\\" + "sub" * (item.depth - 1) + "section*{"
-            heading_level = "\\" + "sub" * (item.depth - 1) + "section{"
+
+            level_header = "\\" + "subsubsection{"
+            heading = "\\" + "subsubsection{"
+            heading_level = "\\" + "subsubsection{"
+
+            level = format_level(item.level)
+            prefix = item.document.prefix
+            uid = str(item.uid)
+            split_uid = uid.split("-")
+
+            # 'Level' Header for each document w/separator
+            if item_count == 0:
+                if prefix.startswith("L0"):
+                    yield "\\" + "section{Level- 0}\n"
+                else:
+                    yield "\\" + "section{Level- " + level + "}\n"
+
+            # Creating subsections for each document based on adjusted levels
+            if len(split_uid) == 4:
+                found_prefix = str(split_uid[0])
+                category = str(split_uid[1])
+                sub_category = str(split_uid[2])
+                if category != prev_category:
+                    prev_category = category
+                    prev_subcategory = sub_category
+                    yield "\\subsection{" + category + "- " + sub_category + "}\n"
+                if sub_category != prev_subcategory:
+                    prev_subcategory = sub_category
+                    yield "\\subsection{" + category + "- " + sub_category + "}\n"
 
             if item.heading:
                 text_lines = item.text.splitlines()
@@ -140,7 +174,25 @@ class LaTeXPublisher(BasePublisher):
                 # Text
                 if item.text:
                     yield ""  # break before text
-                    yield from self._format_latex_text(item.text.splitlines())
+                    text_fixed = self._format_latex_text(item.text.splitlines())
+                    yield from self._format_href_text(text_fixed)
+                    yield ""
+
+                # Add custom publish attributes
+                if item.document and item.document.publish:
+                    header_printed = False
+                    for attr in item.document.publish:
+                        if not item.attribute(attr):
+                            continue
+                        else:
+                            attr_label = "\\textbf{" + attr.capitalize() + ": }"
+                            attr_text = item.attribute(attr)
+                            fixed_attr = self._format_latex_text(attr_text.splitlines())
+                            yield ""
+                            yield attr_label
+                            yield from self._format_href_text(fixed_attr)
+                            yield ""
+
 
                 # Reference
                 if item.ref:
@@ -154,7 +206,6 @@ class LaTeXPublisher(BasePublisher):
 
                 # Parent links
                 if item.links:
-                    yield ""  # break before links
                     items2 = item.parent_items
                     if settings.PUBLISH_CHILD_LINKS:
                         label = "Parent links:"
@@ -162,39 +213,43 @@ class LaTeXPublisher(BasePublisher):
                         label = "Links:"
                     links = self.format_links(items2, linkify)
                     label_links = self.format_label_links(label, links, linkify)
+                    yield ""
                     yield label_links
 
                 # Child links
                 if settings.PUBLISH_CHILD_LINKS:
                     items2 = item.find_child_items()
                     if items2:
-                        yield ""  # break before links
                         label = "Child links:"
                         links = self.format_links(items2, linkify)
                         label_links = self.format_label_links(label, links, linkify)
+                        yield ""
                         yield label_links
 
-                # Add custom publish attributes
-                if item.document and item.document.publish:
-                    header_printed = False
-                    for attr in item.document.publish:
-                        if not item.attribute(attr):
-                            continue
-                        if not header_printed:
-                            header_printed = True
-                            yield "\\begin{longtable}{|l|l|}"
-                            yield "\\setlength{\\LTleft}{0pt}"
-                            yield "\\begin{tabular}{p{0.2\\linewidth} | p{0.70\\linewidth}}"
-                            yield "Attribute & Values\\\\"
-                            yield self.HLINE
-                        yield "{} & {} \\\\".format(attr, item.attribute(attr))
-                    if header_printed:
-                        yield self.END_TABULAR
-                        yield self.END_LONGTABLE
-                    else:
-                        yield ""
+                # Original version
+                # if item.document and item.document.publish:
+                #     header_printed = False
+                #     for attr in item.document.publish:
+                #         if not item.attribute(attr):
+                #             continue
+                #         if not header_printed:
+                #             header_printed = True
+                #             yield "\\begin{longtable}{|l|l|}"
+                #             yield "\\setlength{\\LTleft}{0pt}"
+                #             yield "\\begin{tabular}{p{0.2\\linewidth} | p{0.70\\linewidth}}"
+                #             yield "Attribute & Values\\\\"
+                #             yield self.HLINE
+                #         yield "{} & {} \\\\".format(attr, item.attribute(attr))
+                #     if header_printed:
+                #         yield self.END_TABULAR
+                #         yield self.END_LONGTABLE
+                #     else:
+                #         yield ""
+
+            item_count = item_count + 1
 
             yield ""  # break between items
+        yield "" # break between requirements
 
     def format_attr_list(self, item, linkify):
         """Create a LaTeX attribute list for a heading."""
@@ -295,6 +350,36 @@ class LaTeXPublisher(BasePublisher):
                 line = _fix_table_line(line, end_pipes)
         return table_found, header_done, line, end_pipes
 
+    def _format_href_text(self, text):
+        """Fix the href text related issues being seen."""
+        output_line = ""
+        for i, line in enumerate(text):
+            if "](" in line:
+                split_line_text = line.split("[")
+                # Text before the link
+                text = str(split_line_text[0])
+                # Rest of line / unformatted with no text part
+                remainder = str(split_line_text[1])
+                split_link_prefix = remainder.split("](")
+                split_link = str(split_link_prefix[1]).split(")")
+                # Markdown URL prefix
+                url_prefix = "{" + str(split_link_prefix[0]) + "}"
+                link = "{" + str(split_link[0]) + "}"
+                url_prefix = url_prefix.replace("_", "\_")
+                rest_text = str(split_link[1])
+                output_line = text + "\href" + link + url_prefix + rest_text
+                yield output_line
+            elif "<br>" in line:
+                output_line = line.replace("_", "\_").replace("^", "\^")
+                output_line = line.split("<br><br>")
+                output_line = line.split("<br> <br>")
+                yield str(output_line[0])
+                yield ""
+                yield str(output_line[1])
+            else:
+                output_line = line.replace("_", "\_").replace("^", "\^")
+                yield output_line
+
     def _format_latex_text(self, text):
         """Fix all general text formatting to use LaTeX-macros."""
         block: List[str]
@@ -309,8 +394,9 @@ class LaTeXPublisher(BasePublisher):
         plantuml_name = ""
         plantuml_count = 0
         end_pipes = False
+
         for i, line in enumerate(text):
-            no_paragraph = False
+
             #############################
             ## Fix plantuml.
             #############################
@@ -548,7 +634,8 @@ class LaTeXPublisher(BasePublisher):
             table_start = table_start + "|l"
             if len(table_head) > 0:
                 table_head = table_head + " & "
-            table_head = table_head + "\\textbf{" + str(column) + "}"
+            header = str(column).split("-")[0]
+            table_head = table_head + "\\textbf{" + header + "}"
         table_start = table_start + "|}"
         table_head = table_head + "\\\\"
         traceability.append(table_start)
@@ -608,7 +695,8 @@ class LaTeXPublisher(BasePublisher):
             log.warning(
                 "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
             )
-        tail = doc_attributes["name"] + ".tex"
+        #tail = doc_attributes["name"] + ".tex"
+        tail = "Requirements.tex"
         self.documentPath = os.path.join(head, extract_prefix(self.document) + ".tex")
         wrapperPath = os.path.join(head, tail)
         # Load template data.
@@ -712,31 +800,29 @@ class LaTeXPublisher(BasePublisher):
         wrapper = _add_comment(wrapper, "END list depth fix.")
         wrapper.append("")
 
-        info_text_set = False
-        for external, _ in iter_documents(self.object, self.path, ".tex"):
-            # Check for defined document attributes.
-            external_doc_attributes = get_document_attributes(external)
-            # Don't add self.
-            if external_doc_attributes["name"] != doc_attributes["name"]:
-                if not info_text_set:
-                    wrapper = _add_comment(
-                        wrapper,
-                        "These are automatically added external references to make cross-references work between the PDFs.",
-                    )
-                    info_text_set = True
-                wrapper.append(
-                    "\\zexternaldocument{{{n}}}".format(
-                        n=external_doc_attributes["name"]
-                    )
-                )
-                wrapper.append(
-                    "\\externaldocument{{{n}}}".format(
-                        n=external_doc_attributes["name"]
-                    )
-                )
-        if info_text_set:
-            wrapper = _add_comment(wrapper, "END external references.")
-            wrapper.append("")
+        ## Previous external link referencing.
+        # for external, _ in iter_documents(self.object, self.path, ".tex"):
+        #     # Check for defined document attributes.
+        #     external_doc_attributes = get_document_attributes(external)
+        #     # Don't add self.
+        #     if external_doc_attributes["name"] != doc_attributes["name"]:
+        #         if not info_text_set:
+        #             wrapper = _add_comment(
+        #                 wrapper,
+        #                 "These are automatically added external references to make cross-references work between the PDFs.",
+        #             )
+        #             info_text_set = True
+        #         wrapper.append(
+        #             "\\zexternaldocument{{{n}}}".format(
+        #                 n=external_doc_attributes["name"]
+        #             )
+        #         )
+        #         wrapper.append(
+        #             "\\externaldocument{{{n}}}".format(
+        #                 n=external_doc_attributes["name"]
+        #             )
+        #         )
+
         wrapper = _add_comment(
             wrapper,
             "These lines were automatically added from the template configuration file to allow full customization of the template _before_ \\begin{document}.",
@@ -752,30 +838,79 @@ class LaTeXPublisher(BasePublisher):
             wrapper,
             "These lines were automatically added from the template configuration file to allow full customization of the template _after_ \\begin{document}.",
         )
+
         for line in template_data["after_begin_document"]:
             wrapper.append(line)
         wrapper = _add_comment(
             wrapper, "END custom data from the template configuration file."
         )
         wrapper.append("")
-        wrapper = _add_comment(wrapper, "Load the doorstop data file.")
-        wrapper.append("\\input{{{n}.tex}}".format(n=extract_prefix(self.document)))
-        wrapper = _add_comment(wrapper, "END doorstop data file.")
+
+        # Adjusted link referencing for one document output (for doc-xx.tex)
+        info_text_set = False
+        wrapper = _add_comment(
+            wrapper,
+            "Loading all doorstop data files from external document attributes.",
+        )
+        for external, _ in iter_documents(self.object, self.path, ".tex"):
+            # Check for defined document attributes.
+            external_doc_attributes = extract_prefix(external)
+            info_text_set = True
+            wrapper.append(
+                "\\input{{{n}.tex}}".format(n=external_doc_attributes)
+            )
+            wrapper.append("\\newpage")
+
+        if info_text_set:
+            wrapper = _add_comment(wrapper, "END doorstop data files.")
+            wrapper.append("")
+
+        graphics_present = False
+        # To include graphics listed in yaml file after the beginning of the document but before the matrix.
+        for graphics, label in template_data["include_graphics"].items():
+            graphics_present = True
+            if label:
+                adjusted_label = str(label).replace("['", "").replace("']", "")
+                label_line = "\\section{" + adjusted_label + "}"
+            else:
+                label_line = "section{Image_1}"
+            wrapper.append(label_line)
+            wrapper.append("\\begin{figure}[ht!]")
+            wrapper.append("\\begin{center}")
+            wrapper.append("\\includegraphics[angle=90, height=20cm, width=\\textwidth]{" + graphics + "}")
+            wrapper.append("\\end{center}")
+            wrapper.append("\\end{figure}")
+            wrapper.append("\\newpage")
+        wrapper = _add_comment(
+            wrapper, "END data from the template configuration file."
+        )
         wrapper.append("")
+        if graphics_present:
+            wrapper = _add_comment(
+                wrapper, "No empty page needed before traceability matrix / graphics present."
+            )
+        else:
+            wrapper = _add_comment(
+                wrapper, "Adding empty page before traceability matrix"
+            )
+            # Add an empty page before the traceability matrix for graphs
+            wrapper.append("")
+            wrapper.append("\\newpage")
+            wrapper.append("")
+
         # Include traceability matrix
         if self.matrix:
             wrapper = _add_comment(wrapper, "Add traceability matrix.")
-            if settings.PUBLISH_HEADING_LEVELS:
-                wrapper.append("\\section{Traceability}")
-            else:
-                wrapper.append("\\section*{Traceability}")
+            wrapper.append("\\section{Traceability Matrix}")
             wrapper.append("\\input{traceability.tex}")
             wrapper = _add_comment(wrapper, "END traceability matrix.")
             wrapper.append("")
+
+        # End the document command to be added
         wrapper.append("\\end{document}")
         common.write_lines(wrapper, wrapperPath, end=settings.WRITE_LINESEPERATOR)
 
         # Add to compile.sh as return value.
-        return "xelatex -interaction=nonstopmode {n}.tex".format(
-            n=doc_attributes["name"]
-        )
+        compile_script = "xelatex -interaction=nonstopmode Requirements.tex"
+
+        return compile_script
