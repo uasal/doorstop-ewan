@@ -133,11 +133,18 @@ class BasePublisher(metaclass=ABCMeta):
         :param tree: optional tree to determine index structure
 
         """
+
         raise NotImplementedError
 
     def create_matrix(self, directory):  # pragma: no cover (abstract method)
         """Create a traceability table."""
         raise NotImplementedError
+
+    def _matrix_content(self):
+        """Yield rows of content for the traceability matrix in csv format."""
+        yield tuple(map(extract_prefix, self.object.documents))
+        for row in self.object.get_traceability():
+            yield tuple(map(extract_uid, row))
 
     @abstractmethod
     def format_attr_list(self, item, linkify):  # pragma: no cover (abstract method)
@@ -309,12 +316,12 @@ def get_document_attributes(obj, is_html=False, extensions=None):
     """Try to get attributes from document."""
     doc_attributes = {}
     doc_attributes["name"] = "doc-" + obj.prefix
-    doc_attributes["title"] = "Test document for development of _Doorstop_"
-    doc_attributes["ref"] = "-"
+    doc_attributes["title"] = "Pearl Requirements"
+    doc_attributes["ref"] = "GitHub"
     doc_attributes["by"] = "-"
     doc_attributes["major"] = "-"
     doc_attributes["minor"] = ""
-    doc_attributes["copyright"] = "Doorstop"
+    doc_attributes["copyright"] = ""
     try:
         attribute_defaults = obj.__getattribute__("_attribute_defaults")
     except AttributeError:
