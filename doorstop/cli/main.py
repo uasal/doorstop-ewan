@@ -207,7 +207,7 @@ def _create(subs, shared):
     sub.add_argument(
         "-a",
         "--attributes_publish",
-        choices=["verification plan", "notes", "owner(s)", "tags", "mission success criteria"],
+        choices=["verification plan", "rationale", "notes", "owner(s)", "tags", "mission success criteria"],
         action='append',
         help="attributes to published with requirements",
         #default=document.Document.DEFAULT_ATTRIBUTES_PUBLISH,
@@ -215,7 +215,7 @@ def _create(subs, shared):
     sub.add_argument(
         "-r",
         "--extended_reviewed",
-        choices=["verification plan", "notes", "owner(s)", "tags", "mission success criteria"],
+        choices=["verification plan", "rationale", "notes", "owner(s)", "tags", "mission success criteria"],
         action='append',
         help="attributes to add to requirements fingerprint",
     )
