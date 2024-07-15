@@ -169,6 +169,9 @@ class MarkdownPublisher(BasePublisher):
                 heading = lines[0] if lines else ""
             elif item.header:
                 heading = "{h}- _{u}_".format(h=item.header, u=item.uid)
+            # Check if item has a 'short name' / treat as a header
+            elif item.short_name:
+                heading = "**{u}**- _{s}_".format(u=item.uid, s=item.short_name)
             else:
                 heading = item.uid
 
@@ -297,6 +300,12 @@ class MarkdownPublisher(BasePublisher):
             # Create item heading.
             complete_heading = self._generate_heading_from_item(item, to_html=to_html)
             yield complete_heading
+
+            # Short Name
+            if item.short_name:
+                yield "" # break before short name
+                shortname = str(item.short_name.splitlines())
+                yield "_" + shortname.replace("['", "").replace("']", "") + "_"
 
             # Text
             if item.text:
