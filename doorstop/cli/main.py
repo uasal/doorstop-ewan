@@ -205,11 +205,19 @@ def _create(subs, shared):
         help="item file format",
     )
     sub.add_argument(
-        "-attr",
-        "--attributes",
-        choices=["verification-plan", "notes", "owner(s)", "tags", "mission-success-criteria"],
-        default="notes",
-        help="additional attributes to publish",
+        "-a",
+        "--attributes_publish",
+        choices=["verification plan", "notes", "owner(s)", "tags", "mission success criteria"],
+        action='append',
+        help="attributes to published with requirements",
+        #default=document.Document.DEFAULT_ATTRIBUTES_PUBLISH,
+    )
+    sub.add_argument(
+        "-r",
+        "--extended_reviewed",
+        choices=["verification plan", "notes", "owner(s)", "tags", "mission success criteria"],
+        action='append',
+        help="attributes to add to requirements fingerprint",
     )
     sub.add_argument(
         "-d",

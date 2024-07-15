@@ -126,6 +126,8 @@ def run_create(args, cwd, _, catch=True):
             digits=args.digits,
             sep=args.separator,
             itemformat=args.itemformat,
+            attributes_publish=args.attributes_publish,
+            extended_reviewed=args.extended_reviewed,
         )
 
     if not success:
