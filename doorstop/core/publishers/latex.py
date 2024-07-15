@@ -115,9 +115,11 @@ class LaTeXPublisher(BasePublisher):
             # 'Level' Header for each document w/separator
             if item_count == 0:
                 if prefix.startswith("L0"):
-                    yield "\\" + "section{Level- 0}\n"
+                    yield "\\" + "section{Level- 0}"
                 else:
-                    yield "\\" + "section{Level- " + level + "}\n"
+                    yield "\\" + "section{Level- " + level + "}"
+            else:
+                yield "\\vspace{0.8cm}"
 
             # Creating subsections for each document based on adjusted levels
             if len(split_uid) == 4:
@@ -127,10 +129,10 @@ class LaTeXPublisher(BasePublisher):
                 if category != prev_category:
                     prev_category = category
                     prev_subcategory = sub_category
-                    yield "\\subsection{" + category + "- " + sub_category + "}\n"
+                    yield "\\subsection{" + category + "- " + sub_category + "}"
                 if sub_category != prev_subcategory:
                     prev_subcategory = sub_category
-                    yield "\\subsection{" + category + "- " + sub_category + "}\n"
+                    yield "\\subsection{" + category + "- " + sub_category + "}"
 
             if item.heading:
                 text_lines = item.text.splitlines()
@@ -160,7 +162,8 @@ class LaTeXPublisher(BasePublisher):
                             h=_latex_convert(item.header), u=item.uid
                         )
                     else:
-                        uid = "{u}".format(u=item.uid)
+                        short_name = "\\small\\textit{{{s}}}".format(s=_latex_convert(item.short_name))
+                        uid = "{{{u}- }}{s}".format(u=item.uid, s=short_name)
 
                 # Level and UID
                 if settings.PUBLISH_BODY_LEVELS:
@@ -170,6 +173,13 @@ class LaTeXPublisher(BasePublisher):
 
                 attr_list = self.format_attr_list(item, True)
                 yield standard + attr_list
+
+                # # Short Name
+                # if item.short_name:
+                #     yield ""  # break before text
+                #     text_fixed = self._format_latex_text(item.short_name.splitlines())
+                #     yield from self._format_href_text(text_fixed)
+                #     yield ""
 
                 # Text
                 if item.text:
@@ -188,42 +198,34 @@ class LaTeXPublisher(BasePublisher):
                             attr_label = "\\textbf{" + attr.capitalize() + ": }"
                             attr_text = item.attribute(attr)
                             fixed_attr = self._format_latex_text(attr_text.splitlines())
-                            yield ""
                             yield attr_label
                             yield from self._format_href_text(fixed_attr)
                             yield ""
 
-
                 # Reference
                 if item.ref:
-                    yield ""  # break before reference
+                    #yield ""  # break before reference
                     yield self.format_ref(item)
 
                 # Reference
                 if item.references:
-                    yield ""  # break before reference
+                    #yield ""  # break before reference
                     yield self.format_references(item)
 
-                # Parent links
-                if item.links:
-                    items2 = item.parent_items
-                    if settings.PUBLISH_CHILD_LINKS:
-                        label = "Parent links:"
-                    else:
-                        label = "Links:"
-                    links = self.format_links(items2, linkify)
-                    label_links = self.format_label_links(label, links, linkify)
-                    yield ""
-                    yield label_links
-
-                # Child links
+                # Parent and Child links
                 if settings.PUBLISH_CHILD_LINKS:
                     items2 = item.find_child_items()
-                    if items2:
-                        label = "Child links:"
-                        links = self.format_links(items2, linkify)
-                        label_links = self.format_label_links(label, links, linkify)
-                        yield ""
+                    label_links = ""
+                    if item.links or items2:
+                        if item.links:
+                            items1 = item.parent_items
+                            label = "Parent links:"
+                            links = self.format_links(items1, linkify)
+                            label_links = self.format_label_links(label, links, linkify)
+                        if items2:
+                            label = "Child links:"
+                            links = self.format_links(items2, linkify)
+                            label_links = self.format_label_links(label, links, linkify)
                         yield label_links
 
                 # Original version
@@ -249,7 +251,7 @@ class LaTeXPublisher(BasePublisher):
             item_count = item_count + 1
 
             yield ""  # break between items
-        yield "" # break between requirements
+        yield ""  # break between requirements
 
     def format_attr_list(self, item, linkify):
         """Create a LaTeX attribute list for a heading."""
@@ -370,19 +372,13 @@ class LaTeXPublisher(BasePublisher):
                 rest_text = str(split_link[1]).replace("_", "\_")
                 output_line = text + "\href" + link + url_prefix + rest_text
                 yield output_line
-            elif "<br> <br>" in line:
-                output_line = line.split("<br> <br>")
-                yield str(output_line[0]).replace("^", "\^").replace("_", "\_")
-                yield ""
-                yield str(output_line[1]).replace("^", "\^").replace("_", "\_")
-            elif "<br><br>" in line:
-                output_line = line.split("<br><br>")
-                yield str(output_line[0]).replace("^", "\^").replace("_", "\_")
-                yield ""
-                yield str(output_line[1]).replace("^", "\^").replace("_", "\_")
+            elif "<br>" in line:
+                output_line = line.replace("<br> <br>", "\\par ").replace("<br><br>", "\\par ").replace("<br>", "\\par")
+                yield output_line.replace("^", "\^").replace("_", "\_")
             else:
-                output_line = line.replace("_", "\_").replace("^", "\^")
+                output_line = line.replace("^", "\^").replace("_", "\_")
                 yield output_line
+
 
     def _format_latex_text(self, text):
         """Fix all general text formatting to use LaTeX-macros."""
@@ -639,30 +635,31 @@ class LaTeXPublisher(BasePublisher):
             if len(table_head) > 0:
                 table_head = table_head + " & "
             header = str(column).split("-")[0]
+            print(header)
             table_head = table_head + "\\textbf{" + header + "}"
-        table_start = table_start + "|}"
-        table_head = table_head + "\\\\"
+        table_start = table_start + "|}\\\\"
+        table_head = table_head + ""
         traceability.append(table_start)
         traceability.append(
             "\\caption{Traceability matrix.}\\label{tbl:trace}\\zlabel{tbl:trace}\\\\"
         )
-        traceability.append(self.HLINE)
+        #traceability.append(self.HLINE)
         traceability.append(table_head)
-        traceability.append(self.HLINE)
+        #traceability.append(self.HLINE)
         traceability.append("\\endfirsthead")
-        traceability.append("\\caption{\\textit{(Continued)} Traceability matrix.}\\\\")
-        traceability.append(self.HLINE)
+        traceability.append("\\caption{\\textit{(Continued)} Traceability matrix.}\\\\ \\hline")
+        #traceability.append(self.HLINE)
         traceability.append(table_head)
-        traceability.append(self.HLINE)
+        #traceability.append(self.HLINE)
         traceability.append("\\endhead")
-        traceability.append(self.HLINE)
+        #traceability.append(self.HLINE)
         traceability.append(
             "\\multicolumn{{{n}}}{{r}}{{\\textit{{Continued on next page.}}}}\\\\".format(
                 n=count
             )
         )
         traceability.append("\\endfoot")
-        traceability.append(self.HLINE)
+        #traceability.append(self.HLINE)
         traceability.append("\\endlastfoot")
         # Add rows.
         for row in table:
@@ -674,9 +671,9 @@ class LaTeXPublisher(BasePublisher):
                     row_text = row_text + "\\hyperref[{u}]{{{u}}}".format(u=str(column))
                 else:
                     row_text = row_text + " "
-            row_text = row_text + "\\\\"
+            row_text = row_text + "\\\\ \\hline"
             traceability.append(row_text)
-            traceability.append(self.HLINE)
+            #traceability.append(self.HLINE)
         # End the table.
         traceability.append(self.END_LONGTABLE)
         common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)
