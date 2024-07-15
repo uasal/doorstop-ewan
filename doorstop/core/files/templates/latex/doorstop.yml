@@ -21,6 +21,7 @@ usepackage:
   xr-hyper:
   microtype:
   gitinfo2:
+  parskip:
   silence:
   hyperref:
     # Options are defined as sub-lists.
@@ -30,14 +31,20 @@ usepackage:
   zref-xr:
 # Define custom lines before \begin{document}
 before_begin_document:
+  # Define the title for the published document output
   - \def\docname{Pearl Requirements}
+  # Define / update the repository link requirements are located for reference
   - \def\repourl{https://github.com/uasal/pearl_requirements}
-  - \def\repo{\href{\repourl}{GitHub Repo}}
   - \def\access{For access to the repository contact douglase@arizona.edu}
+  # Define the 'subtitle' that will be listed under the title.
   - \def\docdef{Descriptions, Owners, Rationales, and Notes}
+  # Define / list authors and contributors to add to the title page
   - \def\authors{Kyle Van Gorkom, Ariel Shaver, Douglas M. Kelly, Ewan S. Douglas}
   - \def\contributors{Roger Angel, Laird Close, Victor Gasho, Lori Harrison, Jared Males, Buddy Martin, Manny Montoya, et al.}
+  # Define copyright claimer (document side watermark)
+  - \def\claimer{\color{black!40}Nothing in this document is proprietary or confidential.}
 # For appending graphics only before the end of the document
+# Format -> image name: -> image title
 include_graphics:
   Digraph_gv.png:
     - Requirement Flow

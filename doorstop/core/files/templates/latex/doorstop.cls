@@ -82,6 +82,7 @@
 \RequirePackage[unicode,colorlinks]{hyperref}
 \RequirePackage{zref-user}
 \RequirePackage{zref-xr}
+\RequirePackage{parskip}
 
 \edef\masterBranch{\detokenize{master}}
 \edef\gitBranch{\gitBranch}
@@ -129,17 +130,17 @@
 \definetrim{logotrim}{20pt 100pt 20pt 100pt}
 \def\titlelogo{template/title-logo.png}
 
-% Define a copyright claimer.
-\def\claimer{\color{black!40}All information in this document is the intellectual property of \doccopyright{}. You are not allowed to disclose any information herein to a third party prior to written consent from \doccopyright{}. All rights reserved. \copyright \doccopyright{}}
+% Define the repository href format
+\def\repo{\href{\repourl}{GitHub Repo}}
 
 % Sets the counting depths for TOC
-\setcounter{tocdepth}{4}
-\setcounter{topnumber}{5}
-\setcounter{totalnumber}{6}
+\setcounter{tocdepth}{3}
+\setcounter{topnumber}{4}
+\setcounter{totalnumber}{5}
 
 % Change paragraph to act as a subsubsubsection
 \setcounter{secnumdepth}{4}
-\titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{2em}{}
+\titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{0em}{}
 \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{1em}
 
 % Setup colors
@@ -160,54 +161,54 @@
 % Change TOC index to start with 0 instead of 1
 \setcounter{section}{-1}
 % Section
-\titlecontents{section}[0em]
-	{\scshape\bfseries}
+\titlecontents*{section}[0em]
+	{\bfseries}
 	{\thecontentslabel\hspace*{1pc}}
 	{}
-	{\normalfont\titlerule*[1pc]{.}\contentspage\\[1mm]}
+	{\normalfont\titlerule*[1pc]{-}\contentspage\\[1mm]}
 % Subsection
-\titlecontents{subsection}[1em]
+\titlecontents*{subsection}[2em]
 	{\normalfont\bfseries}
 	{\thecontentslabel\hspace*{1pc}}
 	{}
-	{\titlerule*[1pc]{.}\contentspage\\[0.6mm]}
+	{\titlerule*[1pc]{-}\contentspage\\[1mm]}
 % Subsubsection
-\titlecontents{subsubsection}[2em]
+\titlecontents*{subsubsection}[4em]
 	{\normalfont}
 	{\thecontentslabel\hspace*{1pc}}
 	{}
-	{\titlerule*[1pc]{.}\contentspage\\[0.3mm]}
+	{\titlerule*[1pc]{.}\contentspage\\}
 % Paragraph (subsubsubsection)
-\titlecontents{paragraph}[3em]
+\titlecontents*{paragraph}[6em]
 	{\normalfont}
 	{\thecontentslabel\hspace*{1pc}\itshape}
 	{}
-	{\normalfont\titlerule*[1pc]{.}\contentspage\\[0.3mm]}
+	{\normalfont\titlerule*[1pc]{.}\contentspage\\}
 
 % Setup the listings package
-\lstset{breaklines=false,basicstyle=\ttfamily,moredelim=[is][\bfseries]{€}{€}}
+\lstset{breaklines=true,basicstyle=\ttfamily,moredelim=[is][\bfseries]{€}{€}}
 
 % Setup how the headings look
 % Section
 \renewcommand\section{\@startsection {section}{1}{\z@}%
                                    {-3.5ex \@plus -1ex \@minus -.2ex}%
                                    {2.3ex \@plus.2ex}%
-                                  {\scshape\Large\bfseries}}
+                                  {\Large\bfseries}}
 % Subsection
 \renewcommand\subsection{\@startsection {subsection}{2}{\z@}%
                                    {-3.5ex \@plus -1ex \@minus -.2ex}%
                                    {2.3ex \@plus.2ex}%
-                                  {\scshape\large\bfseries}}
+                                  {\large\bfseries}}
 % Subsubsection
 \renewcommand\subsubsection{\@startsection {subsubsection}{3}{\z@}%
-                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                   {-1ex \@plus -1ex \@minus -.2ex}%
                                    {2.3ex \@plus.2ex}%
-                                  {\scshape\large\bfseries}}
-% Subsubsubsection / paragraph
-\renewcommand\paragraph{\@startsection {paragraph}{4}{\z@}%
-                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
-                                   {2.3ex \@plus.2ex}%
-                                  {\scshape\large\bfseries}}
+                                  {\large\bfseries}}
+%% Subsubsubsection / paragraph
+%\renewcommand\paragraph{\@startsection {paragraph}{4}{\z@}%
+%                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+%                                   {2.3ex \@plus.2ex}%
+%                                  {\large\bfseries}}
 
 
 % Setup how floats are placed on the pages
@@ -289,7 +290,7 @@
 	\begin{center}
 		\includegraphics[height=3in]{\logo}\\[1mm]
 		\vspace{0.5cm} \mbox{}\hrulefill \mbox{}\\[1cm]
-     		{\Huge \textbf{\textsc{\doctitle\\[0.5cm]}}}
+     		{\Huge \textbf{\doctitle\\[0.5cm]}}
      		{\LARGE \textit{\docdef}}\\[0.5cm]
             {\large \textbf{Date: }\today} \vfill
             {\large \textbf{\repo}} \\[0.2cm]
