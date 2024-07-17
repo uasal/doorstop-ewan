@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.0b15"
+version = "3.0b15" # Base pre-release verision is 3.0b15. SFR edited version- 1
 description = "Requirements management using version control."
 
 license = "LGPLv3"

@@ -106,6 +106,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_DERIVED = False
     DEFAULT_REVIEWED = Stamp()
     DEFAULT_TEXT = Text()
+    DEFAULT_SHORT_NAME = Text()
+    DEFAULT_NOTES = Text()
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
     DEFAULT_ITEMFORMAT = "yaml"
@@ -144,7 +146,9 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["normative"] = Item.DEFAULT_NORMATIVE  # type: ignore
         self._data["derived"] = Item.DEFAULT_DERIVED  # type: ignore
         self._data["reviewed"] = Item.DEFAULT_REVIEWED  # type: ignore
+        self._data["short name"] = Item.DEFAULT_SHORT_NAME # type: ignore
         self._data["text"] = Item.DEFAULT_TEXT
+        self._data["notes"] = Item.DEFAULT_NOTES
         self._data["ref"] = Item.DEFAULT_REF
         self._data["references"] = None  # type: ignore
         self._data["links"] = set()  # type: ignore
@@ -249,7 +253,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = to_bool(value)
             elif key == "reviewed":
                 value = Stamp(value)
+            elif key == "short name":
+                value = Text(value)
             elif key == "text":
+                value = Text(value)
+            elif key == "notes":
                 value = Text(value)
             elif key == "ref":
                 value = value.strip()
@@ -343,6 +351,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
             if key == "level":
                 value = value.yaml  # type: ignore
+            elif key == "short name":
+                value = _convert_to_yaml(0, len(key) + 2, value)
             elif key == "text":
                 value = value.yaml  # type: ignore
             elif key == "header":
@@ -369,6 +379,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == "links":
                 value = [{str(i): i.stamp.yaml} for i in sorted(value)]  # type: ignore
             elif key == "reviewed":
+                value = value.yaml  # type: ignore
+            elif key == "notes":
                 value = value.yaml  # type: ignore
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
@@ -513,6 +525,18 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     @property  # type: ignore
     @auto_load
+    def short_name(self):
+        """Get the item's text."""
+        return self._data["short name"]
+
+    @short_name.setter  # type: ignore
+    @auto_save
+    def short_name(self, value):
+        """Set the item's text."""
+        self._data["short name"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
     def text(self):
         """Get the item's text."""
         return self._data["text"]
@@ -522,6 +546,18 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def text(self, value):
         """Set the item's text."""
         self._data["text"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def notes(self):
+        """Get the item's text."""
+        return self._data["notes"]
+
+    @notes.setter  # type: ignore
+    @auto_save
+    def notes(self, value):
+        """Set the item's text."""
+        self._data["notes"] = Text(value)
 
     @property  # type: ignore
     @auto_load

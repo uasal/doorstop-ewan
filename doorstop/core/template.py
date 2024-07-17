@@ -79,6 +79,8 @@ I.e., only one of the documents in the tree should have a template folder."""
     # Check extension and set template folder accordingly.
     if ext == ".md":
         template_assets = os.sep.join([template_assets, "markdown"])
+    elif ext == ".markdown":
+        template_assets = os.sep.join([template_assets, "markdown"])
     elif ext == ".tex":
         template_assets = os.sep.join([template_assets, "latex"])
         builtin_template = "doorstop"
@@ -87,6 +89,9 @@ I.e., only one of the documents in the tree should have a template folder."""
     else:
         template_assets = os.sep.join([template_assets, "html"])
         builtin_template = HTMLTEMPLATE
+
+
+
 
     # Remove existing templates and assets first.
     if os.path.isdir(assets_dir):

@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{gitinfo2}%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% LaTeX document class: doorstop.cls
 %%
 %% Derived from the Standard LaTeX Book article class.
@@ -40,6 +40,9 @@
   pdfborder={0 0 0},%
   pdfhighlight={/N},%
   linkbordercolor={.5 .5 .5},%
+  colorlinks=true,%
+  urlcolor=true,%
+  linkcolor=true,%
   raiselinks=true,%
   nesting=false}{hyperref}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
@@ -52,7 +55,7 @@
 % ******************************************************
 % Improve error finding capabilities
 % ******************************************************
-\errorcontextlines 10000
+%\errorcontextlines 10000
 
 % ******************************************************
 % Load Used Packages and Classes
@@ -68,7 +71,7 @@
 \RequirePackage{listings}
 \RequirePackage{tikz}
 \RequirePackage{xstring}
-\RequirePackage{titlesec}
+\RequirePackage[compact]{titlesec}
 \RequirePackage{appendix}
 % The following packages are REQUIRED to make the Doorstop publish functions work.
 \RequirePackage{amsmath}
@@ -79,6 +82,10 @@
 \RequirePackage[unicode,colorlinks]{hyperref}
 \RequirePackage{zref-user}
 \RequirePackage{zref-xr}
+\RequirePackage{parskip}
+
+\edef\masterBranch{\detokenize{master}}
+\edef\gitBranch{\gitBranch}
 
 % ******************************************************
 % Functions for PlantUML support.
@@ -120,19 +127,20 @@
   \define@key{Gin}{#1}[]{\setkeys{Gin}{trim=#2,clip}}%
 }
 \def\logo{template/logo-black-white.png}
-\definetrim{logotrim}{0 100px 0 100px}
+\definetrim{logotrim}{20pt 100pt 20pt 100pt}
+\def\titlelogo{template/title-logo.png}
 
-% Define a copyright claimer.
-\def\claimer{\color{black!40}All information in this document is the intellectual property of \doccopyright{}. You are not allowed to disclose any information herein to a third party prior to written consent from \doccopyright{}. All rights reserved. \copyright \doccopyright{}}
+% Define the repository href format
+\def\repo{\href{\repourl}{GitHub Repo}}
 
 % Sets the counting depths for TOC
-\setcounter{tocdepth}{4}
-\setcounter{topnumber}{5}
-\setcounter{totalnumber}{6}
+\setcounter{tocdepth}{3}
+\setcounter{topnumber}{4}
+\setcounter{totalnumber}{5}
 
 % Change paragraph to act as a subsubsubsection
 \setcounter{secnumdepth}{4}
-\titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{0em}{}
 \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{1em}
 
 % Setup colors
@@ -140,33 +148,42 @@
 \definecolor{orchid}{rgb}{0.8516,0.4375,0.8359}
 
 % Set internal link color
-\hypersetup{linkcolor=orchid}
+\hypersetup{%
+	colorlinks=true,
+	linkcolor=blue,
+	urlcolor=blue,
+	filecolor=blue,
+	linktoc=all,
+	citecolor=blue,
+}
 
 % Setup how the TOC looks
+% Change TOC index to start with 0 instead of 1
+\setcounter{section}{-1}
 % Section
-\titlecontents*{section}[1.5em]
-	{\scshape\bfseries}
+\titlecontents*{section}[0em]
+	{\bfseries}
 	{\thecontentslabel\hspace*{1pc}}
 	{}
-	{\normalfont\titlerule*[1pc]{.}\contentspage\\[1mm]}
+	{\normalfont\titlerule*[1pc]{-}\contentspage\\[1mm]}
 % Subsection
 \titlecontents*{subsection}[2em]
-	{\normalfont\scshape}
+	{\normalfont\bfseries}
 	{\thecontentslabel\hspace*{1pc}}
 	{}
-	{\titlerule*[1pc]{.}\contentspage\\[0.6mm]}
+	{\titlerule*[1pc]{-}\contentspage\\[1mm]}
 % Subsubsection
-\titlecontents*{subsubsection}[2em]
+\titlecontents*{subsubsection}[4em]
 	{\normalfont}
 	{\thecontentslabel\hspace*{1pc}}
 	{}
-	{\titlerule*[1pc]{.}\contentspage\\[0.3mm]}
+	{\titlerule*[1pc]{.}\contentspage\\}
 % Paragraph (subsubsubsection)
-\titlecontents*{paragraph}[2em]
+\titlecontents*{paragraph}[6em]
 	{\normalfont}
 	{\thecontentslabel\hspace*{1pc}\itshape}
 	{}
-	{\normalfont\titlerule*[1pc]{.}\contentspage\\[0.3mm]}
+	{\normalfont\titlerule*[1pc]{.}\contentspage\\}
 
 % Setup the listings package
 \lstset{breaklines=true,basicstyle=\ttfamily,moredelim=[is][\bfseries]{€}{€}}
@@ -176,31 +193,43 @@
 \renewcommand\section{\@startsection {section}{1}{\z@}%
                                    {-3.5ex \@plus -1ex \@minus -.2ex}%
                                    {2.3ex \@plus.2ex}%
-                                  {\scshape\Large\bfseries}}
+                                  {\Large\bfseries}}
 % Subsection
-\renewcommand\subsection{\@startsection {subsection}{1}{\z@}%
+\renewcommand\subsection{\@startsection {subsection}{2}{\z@}%
                                    {-3.5ex \@plus -1ex \@minus -.2ex}%
                                    {2.3ex \@plus.2ex}%
-                                  {\scshape\large\bfseries}}
+                                  {\large\bfseries}}
+% Subsubsection
+\renewcommand\subsubsection{\@startsection {subsubsection}{3}{\z@}%
+                                   {-1ex \@plus -1ex \@minus -.2ex}%
+                                   {2.3ex \@plus.2ex}%
+                                  {\large\bfseries}}
+%% Subsubsubsection / paragraph
+%\renewcommand\paragraph{\@startsection {paragraph}{4}{\z@}%
+%                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+%                                   {2.3ex \@plus.2ex}%
+%                                  {\large\bfseries}}
+
 
 % Setup how floats are placed on the pages
 \renewcommand{\topfraction}{.95}
 \renewcommand{\textfraction}{.05}
 \renewcommand{\floatpagefraction}{.75}
 
+
 % Setup the headers and footers
 % Fancy style
 \pagestyle{fancy}
 \fancyhf{}% Clear all settings
-\fancyhead[RE,RO]{\raisebox{0.5cm}{\textsf{\begin{tabular}{p{6.5cm}p{2.8cm}p{0.7cm}}
-\textbf{\large\docname} & {\footnotesize Ref} &{\footnotesize By}\tabularnewline
-\multirow{3}{7cm}[1ex]{\doccategory}&\textrm{\small\docref} & \textrm{\small\docby} \tabularnewline
-&{\footnotesize Date} & {\footnotesize Issue}\tabularnewline
-&\textrm{\small\today} & \textrm{\small\docissuemajor\docissueminor} \tabularnewline
+\fancyhead[RE,RO]{\raisebox{0.5cm}{\textsf{\begin{tabular}{p{5cm}p{2.5cm}p{3.5cm}}
+\textbf{\large\docname} & {\footnotesize\textbf{Repository:}} &{\footnotesize\textbf{Branch:}}\tabularnewline
+\multirow{3}{5cm}[1ex]{\textit{\docdef}}&\textrm{\small\repo} & \textrm{\small\gitBranch} \tabularnewline
+&{\footnotesize\textbf{Date:}} & {\footnotesize\textbf{Commit:}}\tabularnewline
+&\textrm{\small\today} & \textrm{\small\gitDescribe} \tabularnewline
 \end{tabular}}}}
-\fancyhead[LE,LO]{\hspace*{0.2cm}\includegraphics[logotrim, width=4.5cm]{\logo}}
+\fancyhead[LE,LO]{\hspace*{0cm}\includegraphics[logotrim, width=3.5cm]{\logo}}
 \fancyfoot[RO]{%
-	\thepage(\pageref*{LastPage})
+	\thepage(\pageref{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=-90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.east)
 		 {\claimer
@@ -208,7 +237,7 @@
 	\end{tikzpicture}
 	}
 \fancyfoot[LE]{%
-	\thepage(\pageref*{LastPage})
+	\thepage(\pageref{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.west)
 		 {\claimer
@@ -221,7 +250,7 @@
 \renewcommand{\headrulewidth}{0pt} % remove lines as well
 \renewcommand{\footrulewidth}{0pt}
 \fancyfoot[RO]{%
-	\thepage(\pageref*{LastPage})
+	\thepage(\pageref{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=-90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.east)
 		 {\claimer
@@ -229,7 +258,7 @@
 	\end{tikzpicture}
 	}
 \fancyfoot[LE]{%
-	\thepage(\pageref*{LastPage})
+	\thepage(\pageref{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.west)
 		 {\claimer
@@ -259,12 +288,18 @@
 	%--- Make title page
 	\setcounter{page}{1}
 	\begin{center}
-		\includegraphics[logotrim, width=6.5cm]{\logo}\\[1mm]
-		\vspace{0.5cm} \mbox{}\hrulefill \mbox{}\\[1.5cm]
-     		{\Huge \textbf{\textsc{\doctitle\\[2cm]}}}
-     		{\LARGE \textbf{\docname}}\\[15mm]
-     		{\large \doccategory} \vfill
-     		{\large \mbox{}\hrulefill\mbox{}\\[50mm]}
+		\includegraphics[height=3in]{\logo}\\[1mm]
+		\vspace{0.5cm} \mbox{}\hrulefill \mbox{}\\[1cm]
+     		{\Huge \textbf{\doctitle\\[0.5cm]}}
+     		{\LARGE \textit{\docdef}}\\[0.5cm]
+            {\large \textbf{Date: }\today} \vfill
+            {\large \textbf{\repo}} \\[0.2cm]
+			{\large \textbf{Branch: } \gitBranch}
+			{\large \textbf{ Commit:} \gitDescribe} \vfill
+			{\small \textbf{Authors: } \authors} \\[0.2cm]
+            {\small \textbf{Contributors: } \contributors} \vfill
+     		{\large \access} \vfill
+     		{\large \mbox{}\hrulefill\mbox{}\\[35mm]}
   	\end{center}
 	\clearpage{\thispagestyle{blankpage}\cleardoublepage}
 	\pagestyle{fancy}
@@ -274,8 +309,8 @@
 	\pagestyle{fancy}
 	\thispagestyle{fancy}
   \tableofcontents
-	\clearpage{\thispagestyle{blankpage}\cleardoublepage}
-	\pagestyle{fancy}
+  	\clearpage{\mbox{}\thispagestyle{blankpage}\clearpage}
+  	\pagestyle{fancy}
 }
 
 

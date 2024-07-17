@@ -205,6 +205,21 @@ def _create(subs, shared):
         help="item file format",
     )
     sub.add_argument(
+        "-a",
+        "--attributes_publish",
+        choices=["verification plan", "rationale", "notes", "owner(s)", "tags", "mission success criteria"],
+        action='append',
+        help="attributes to published with requirements",
+        #default=document.Document.DEFAULT_ATTRIBUTES_PUBLISH,
+    )
+    sub.add_argument(
+        "-r",
+        "--extended_reviewed",
+        choices=["verification plan", "rationale", "notes", "owner(s)", "tags", "mission success criteria"],
+        action='append',
+        help="attributes to add to requirements fingerprint",
+    )
+    sub.add_argument(
         "-d",
         "--digits",
         help="number of digits in item UIDs",

@@ -313,6 +313,9 @@ class Text(str):
         else:
             return ""
 
+class Original_Level:
+    """ """
+
 
 class Level:
     """Variable-length numerical outline level values.
@@ -648,7 +651,7 @@ def iter_documents(obj, path, ext):
 
 
 def iter_items(obj):
-    """Get an iterator of items from from an item, list, or document."""
+    """Get an iterator of items from an item, list, or document."""
     if is_document(obj):
         # a document
         log.debug("iterating over document...")

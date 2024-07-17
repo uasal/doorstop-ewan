@@ -103,8 +103,8 @@ class HtmlPublisher(MarkdownPublisher):
                 "\n".join(lines),
                 doc_attributes={
                     "name": "Index",
-                    "ref": "-",
-                    "title": "Doorstop index",
+                    "ref": "https://github.com/uasal/pearl_requirements",
+                    "title": "Requirements Index",
                     "by": "-",
                     "major": "-",
                     "minor": "",
@@ -178,7 +178,7 @@ class HtmlPublisher(MarkdownPublisher):
             doc_attributes={
                 "name": "Traceability",
                 "ref": "-",
-                "title": "Doorstop traceability matrix",
+                "title": "Requirements Traceability Matrix",
                 "by": "-",
                 "major": "-",
                 "minor": "",

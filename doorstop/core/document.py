@@ -39,7 +39,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     DEFAULT_PREFIX = Prefix("REQ")
     DEFAULT_SEP = ""
-    DEFAULT_DIGITS = 3
+    DEFAULT_DIGITS = 4
+    DEFAULT_ATTRIBUTES_PUBLISH = ['owner(s)', 'rationale', 'verification plan', 'mission success criteria']
 
     def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
@@ -61,7 +62,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.auto = kwargs.get("auto", Document.auto)
         # Set default values
         self._attribute_defaults = None
-        self._attribute_publish = None
+        #self._attribute_publish = Document.DEFAULT_ATTRIBUTE_PUBLISH
+        self._attributes_publish = Document.DEFAULT_ATTRIBUTES_PUBLISH # type: ignore
+        #self._data["attributes_publish"] = Document.DEFAULT_ATTRIBUTES_PUBLISH # type: ignore
         self._data["prefix"] = Document.DEFAULT_PREFIX
         self._data["sep"] = Document.DEFAULT_SEP
         self._data["digits"] = Document.DEFAULT_DIGITS  # type: ignore
@@ -72,6 +75,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._itered = False
         self.children: List[Document] = []
 
+        #if not self._data["attributes_publish"]:
+        #    self._data["attributes_publish"] = Item.DEFAULT_ATTRIBUTES_PUBLISH
         if not self._data["itemformat"]:
             self._data["itemformat"] = Item.DEFAULT_ITEMFORMAT
 
@@ -106,9 +111,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         parent=None,
         auto=None,
         itemformat=None,
+        attributes_publish=None,
+        extended_reviewed=None,
+
     ):  # pylint: disable=R0913,C0301
         """Create a new document.
 
+        :param attributes_publish: additional attributes to publish
         :param tree: reference to tree that contains this document
 
         :param path: path to directory for the new document
@@ -154,6 +163,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         )
         document.parent = (  # type: ignore
             parent if parent is not None else document.parent
+        )
+        document.attributes_publish = (
+            attributes_publish if attributes_publish is not None else document._attributes_publish
+        )
+        document.extended_reviewed = (
+            extended_reviewed if extended_reviewed is not None else document._extended_reviewed
         )
         if auto or (auto is None and Document.auto):
             document.save()
@@ -222,7 +237,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == "reviewed":
                 self._extended_reviewed = sorted(set(v for v in value))
             elif key == "publish":
-                self._attribute_publish = value
+                self._attributes_publish = value
             else:
                 msg = "unexpected attributes configuration '{}' in: {}".format(
                     key, self.config
@@ -255,6 +270,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             attributes["defaults"] = self._attribute_defaults
         if self._extended_reviewed:
             attributes["reviewed"] = self._extended_reviewed
+        if self._attributes_publish:
+            attributes["publish"] = self._attributes_publish
         if attributes:
             data["attributes"] = attributes
         # Dump the data to YAML
@@ -355,7 +372,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def publish(self):
         """Get the document's prefix."""
-        return self._attribute_publish
+        return self._attributes_publish
 
     @prefix.setter  # type: ignore
     @auto_save
@@ -370,6 +387,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def extended_reviewed(self):
         """Get the document's extended reviewed attribute keys."""
         return self._extended_reviewed
+
+    @extended_reviewed.setter
+    @auto_save
+    @auto_load
+    def extended_reviewed(self, value):
+        """Set the publish attributes."""
+        self._extended_reviewed = value
 
     @property  # type: ignore
     @auto_load
@@ -418,6 +442,19 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def itemformat(self):
         """Get storage format for item files."""
         return self._data["itemformat"]
+
+    @property
+    @auto_load
+    def attributes_publish(self):
+        """Get the publish attributes."""
+        return self._attributes_publish
+
+    @attributes_publish.setter
+    @auto_save
+    @auto_load
+    def attributes_publish(self, value):
+        """Set the publish attributes."""
+        self._attributes_publish = value
 
     @property
     def items(self):
