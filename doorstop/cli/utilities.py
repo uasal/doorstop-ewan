@@ -1,17 +1,18 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Shared functions for the `doorstop.cli` package."""
 
-import os
 import ast
-from argparse import ArgumentTypeError
 import logging
+import os
+from argparse import ArgumentTypeError
 
-from doorstop import common
-from doorstop import settings
+from doorstop import common, settings
 
 log = common.logger(__name__)
 
 
-class capture(object):  # pylint: disable=R0903
+class capture:  # pylint: disable=R0903
     """Context manager to catch :class:`~doorstop.common.DoorstopError`."""
 
     def __init__(self, catch=True):
@@ -30,6 +31,7 @@ class capture(object):  # pylint: disable=R0903
             if self.catch:
                 log.error(exc_value)
                 return True
+        return False
 
 
 def configure_logging(verbosity=0):
@@ -62,7 +64,7 @@ def configure_logging(verbosity=0):
         default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
 
     # Set a custom formatter
-    if not logging.root.handlers:  # pragma: no cover (manual test)
+    if not logging.root.handlers:
         logging.basicConfig(level=level)
         logging.captureWarnings(True)
         formatter = common.WarningFormatter(default_format, verbose_format)
@@ -71,7 +73,7 @@ def configure_logging(verbosity=0):
     # Warn about excessive verbosity
     if verbosity > common.MAX_VERBOSITY:
         msg = "maximum verbosity level is {}".format(common.MAX_VERBOSITY)
-        logging.warn(msg)
+        logging.warning(msg)
         common.verbosity = common.MAX_VERBOSITY
     else:
         common.verbosity = verbosity
@@ -79,6 +81,7 @@ def configure_logging(verbosity=0):
 
 def configure_settings(args):
     """Update settings based on the command-line options."""
+
     # Parse common settings
     if args.no_reformat is not None:
         settings.REFORMAT = args.no_reformat is False
@@ -90,6 +93,8 @@ def configure_settings(args):
         settings.CHECK_REF = args.no_ref_check is False
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = args.no_child_check is False
+    if args.strict_child_check is not None:
+        settings.CHECK_CHILD_LINKS_STRICT = args.strict_child_check is True
     if args.no_suspect_check is not None:
         settings.CHECK_SUSPECT_LINKS = args.no_suspect_check is False
     if args.no_review_check is not None:
@@ -102,16 +107,19 @@ def configure_settings(args):
         settings.WARN_ALL = args.warn_all is True
     if args.error_all is not None:
         settings.ERROR_ALL = args.error_all is True
+
     # Parse `add` settings
-    if hasattr(args, 'server') and args.server is not None:
+    if hasattr(args, "server") and args.server is not None:
         settings.SERVER_HOST = args.server
-    if hasattr(args, 'port') and args.port is not None:
+    if hasattr(args, "port") and args.port is not None:
         settings.SERVER_PORT = args.port
+
     # Parse `publish` settings
-    if hasattr(args, 'no_child_links') and args.no_child_links is not None:
+    if hasattr(args, "no_child_links") and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = args.no_child_links is False
-    if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
-        settings.PUBLISH_BODY_LEVELS = args.no_body_levels is False
+    if hasattr(args, "no_levels") and args.no_levels is not None:
+        settings.PUBLISH_BODY_LEVELS = False
+        settings.PUBLISH_HEADING_LEVELS = args.no_levels != "all"
 
 
 def literal_eval(literal, error=None, default=None):
@@ -137,6 +145,7 @@ def literal_eval(literal, error=None, default=None):
             error(msg)
         else:
             log.critical(msg)
+        return None
 
 
 def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
@@ -151,7 +160,7 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
     :return: chosen extension
 
     """
-    path = args.path if hasattr(args, 'path') else None
+    path = args.path if hasattr(args, "path") else None
     ext = None
 
     # Get the default argument from a provided output path
@@ -165,12 +174,15 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
         log.debug("extension based on path: {}".format(ext or None))
 
     # Override the extension if a format is specified
-    for _ext, option in {'.txt': 'text',
-                         '.md': 'markdown',
-                         '.html': 'html',
-                         '.yml': 'yaml',
-                         '.csv': 'csv',
-                         '.xlsx': 'xlsx'}.items():
+    for _ext, option in {
+        ".txt": "text",
+        ".md": "markdown",
+        ".html": "html",
+        ".yml": "yaml",
+        ".csv": "csv",
+        ".xlsx": "xlsx",
+        ".tex": "latex",
+    }.items():
         try:
             if getattr(args, option):
                 ext = _ext
@@ -212,13 +224,8 @@ def ask(question, default=None):
     :return: True = 'yes', False = 'no'
 
     """
-    valid = {"yes": True,
-             "y": True,
-             "no": False,
-             "n": False}
-    prompts = {'yes': " [Y/n] ",
-               'no': " [y/N] ",
-               None: " [y/n] "}
+    valid = {"yes": True, "y": True, "no": False, "n": False}
+    prompts = {"yes": " [Y/n] ", "no": " [y/N] ", None: " [y/n] "}
 
     prompt = prompts.get(default, prompts[None])
     message = question + prompt
@@ -228,11 +235,11 @@ def ask(question, default=None):
             choice = input(message).lower().strip() or default
         except KeyboardInterrupt as exc:
             print()
-            raise exc from None
+            raise exc from None  # pylint: disable=raising-bad-type
         try:
             return valid[choice]
         except KeyError:
-            options = ', '.join(sorted(valid.keys()))
+            options = ", ".join(sorted(valid.keys()))
             print("valid responses: {}".format(options))
 
 
@@ -248,7 +255,7 @@ def positive_int(value):
     try:
         ival = int(value)
     except ValueError:
-        raise exc from None
+        raise exc from None  # pylint: disable=raising-bad-type
     else:
         if ival < 1:
             raise exc

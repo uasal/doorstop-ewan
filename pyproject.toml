@@ -1,0 +1,113 @@
+[tool.poetry]
+
+name = "doorstop"
+version = "3.0b15"
+description = "Requirements management using version control."
+
+license = "LGPLv3"
+
+authors = ["Jace Browning <jacebrowning@gmail.com>"]
+
+readme = "README.md"
+exclude = ["**/tests/**"]
+
+homepage = "https://pypi.org/project/Doorstop"
+documentation = "https://doorstop.readthedocs.io"
+repository = "https://github.com/doorstop-dev/doorstop"
+
+keywords = [
+  "requirements-management",
+  "version-control",
+  "documentation",
+  "traceability",
+  "markdown",
+  "certification",
+  "html",
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Editors :: Documentation",
+    "Topic :: Text Processing :: Markup",
+]
+
+[tool.poetry.dependencies]
+
+python = "^3.8.10"
+
+pyyaml = "^6.0"
+markdown = "^3.3.3"
+bottle = "~0.12.25"
+requests = "^2.0"
+python-frontmatter = "^1.0"
+python-markdown-math = "~0.6"
+plantuml-markdown = "^3.4.2"
+six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
+openpyxl = ">=3.1.2"
+
+[tool.poetry.dev-dependencies]
+
+# Formatters
+black = "^23.1"
+isort = "^5.12"
+
+# Linters
+mypy = "^1.1.1"
+pydocstyle = "*"
+pylint = "~2.15"
+types-markdown = "*"
+types-pyyaml = "*"
+types-requests = "*"
+types-setuptools = "*"
+
+# Testing
+pytest = "^6.2.5"
+pytest-cov = "*"
+pytest-expecter = "*"
+pytest-sugar = "*"
+WebTest = "3.0.0"
+diff-cover = "8.0.3"
+
+# Reports
+coveragespace = "^4.0"
+
+# Documentation
+mkdocs = "^1.5"
+pygments = "*"
+
+# Tooling
+pyinstaller = "*"
+sniffer = "*"
+macfsevents = { version = "*", platform = "darwin" }
+pync = { version = "*", platform = "darwin" }
+rope = "^0.14.0"
+
+[tool.poetry.scripts]
+
+doorstop = "doorstop.cli.main:main"
+doorstop-gui = "doorstop.gui.main:main"
+doorstop-server = "doorstop.server.main:main"
+
+[tool.black]
+
+quiet = true
+
+[tool.isort]
+
+profile = "black"
+
+[build-system]
+
+requires = ["poetry>=0.12"]
+build-backend = "poetry.core.masonry.api"

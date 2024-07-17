@@ -1,21 +1,22 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Functions to export documents and items."""
 
-import os
-import csv
 import datetime
+import os
 from collections import defaultdict
+from typing import Any, Dict
 
-import yaml
 import openpyxl
+import yaml
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
-from doorstop import settings
 
-LIST_SEP = '\n'  # string separating list values when joined in a string
+LIST_SEP = "\n"  # string separating list values when joined in a string
 
-XLSX_MAX_WIDTH = 65  # maximum width for a column
+XLSX_MAX_WIDTH = 65.0  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 
 log = common.logger(__name__)
@@ -39,7 +40,7 @@ def export(obj, path, ext=None, **kwargs):
 
     """
     # Determine the output format
-    ext = ext or os.path.splitext(path)[-1] or '.csv'
+    ext = ext or os.path.splitext(path)[-1] or ".csv"
     check(ext)
 
     # Export documents
@@ -52,13 +53,13 @@ def export(obj, path, ext=None, **kwargs):
         log.info("exporting to {}...".format(path2))
         if ext in FORMAT_LINES:
             lines = export_lines(obj2, ext, **kwargs)
-            common.write_lines(lines, path2)
+            common.write_lines(lines, path2, end=settings.WRITE_LINESEPERATOR)
         else:
             export_file(obj2, path2, ext, **kwargs)
 
     # Return the exported path
     if count:
-        msg = "exported to {} file{}".format(count, 's' if count > 1 else '')
+        msg = "exported to {} file{}".format(count, "s" if count > 1 else "")
         log.info(msg)
         return path
     else:
@@ -66,7 +67,7 @@ def export(obj, path, ext=None, **kwargs):
         return None
 
 
-def export_lines(obj, ext='.yml', **kwargs):
+def export_lines(obj, ext=".yml", **kwargs):
     """Yield lines for an export in the specified format.
 
     :param obj: Item, list of Items, or Document to export
@@ -113,7 +114,6 @@ def _lines_yaml(obj, **_):
 
     """
     for item in iter_items(obj):
-
         data = {str(item.uid): item.data}
         text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
         yield text
@@ -129,36 +129,71 @@ def _tabulate(obj, sep=LIST_SEP, auto=False):
     :return: iterator of rows of data
 
     """
-    yield_header = True
 
+    header = ["level", "text", "ref", "links"]
+
+    # 'at_least_one_ref' detects if at least one of the items still have a deprecated 'ref' field.
+    # If there is none, 'ref' header is excluded from the headers and is not exported.
+    at_least_one_ref = False
     for item in iter_items(obj):
-
         data = item.data
 
-        # Yield header
-        if yield_header:
-            header = ['level', 'text', 'ref', 'links']
-            for value in sorted(data.keys()):
-                if value not in header:
-                    header.append(value)
-            yield ['uid'] + header
-            yield_header = False
+        for value in sorted(data.keys()):
+            if value not in header:
+                header.append(value)
+
+        ref_value = data.get("ref")
+        if ref_value:
+            at_least_one_ref = True
+
+    try:
+        reference_index = header.index("references")
+
+        # Inserting 'references' header after the 'ref' header.
+        header.insert(3, header.pop(reference_index))
+
+        if not at_least_one_ref:
+            header.remove("ref")
+    except ValueError:
+        pass
+
+    yield ["uid"] + header
+
+    for item in iter_items(obj):
+        data = item.data
 
         # Yield row
         row = [item.uid]
         for key in header:
             value = data.get(key)
-            if key == 'level':
+            if key == "level":
                 # some levels are floats for YAML presentation
                 value = str(value)
-            elif key == 'links':
+            elif key == "links":
                 # separate identifiers with a delimiter
                 value = sep.join(uid.string for uid in item.links)
-            elif isinstance(value, str) and key not in ('reviewed',):
+            elif key == "references":
+                if value is None:
+                    value = ""
+                else:
+                    ref_strings = []
+                    for ref_item in value:
+                        ref_type = ref_item["type"]
+                        ref_path = ref_item["path"]
+
+                        ref_string = "type:{},path:{}".format(ref_type, ref_path)
+
+                        if "keyword" in ref_item:
+                            keyword = ref_item["keyword"]
+                            ref_string += ",keyword:{}".format(keyword)
+
+                        ref_strings.append(ref_string)
+                    value = "\n".join(ref_string for ref_string in ref_strings)
+            elif isinstance(value, str) and key not in ("reviewed",):
                 # remove sentence boundaries and line wrapping
                 value = item.get(key)
             elif value is None:
-                value = ''
+                value = ""
             row.append(value)
         yield row
 
@@ -168,7 +203,7 @@ def _tabulate(obj, sep=LIST_SEP, auto=False):
             yield [settings.PLACEHOLDER]
 
 
-def _file_csv(obj, path, delimiter=',', auto=False):
+def _file_csv(obj, path, delimiter=",", auto=False):
     """Create a CSV file at the given path.
 
     :param obj: Item, list of Items, or Document to export
@@ -179,11 +214,13 @@ def _file_csv(obj, path, delimiter=',', auto=False):
     :return: path of created file
 
     """
-    with open(path, 'w', newline='', encoding='utf-8') as stream:
-        writer = csv.writer(stream, delimiter=delimiter)
-        for row in _tabulate(obj, auto=auto):
-            writer.writerow(row)
-    return path
+    return common.write_csv(
+        _tabulate(obj, auto=auto),
+        path,
+        delimiter=delimiter,
+        newline="",
+        encoding="utf-8",
+    )
 
 
 def _file_tsv(obj, path, auto=False):
@@ -196,7 +233,7 @@ def _file_tsv(obj, path, auto=False):
     :return: path of created file
 
     """
-    return _file_csv(obj, path, delimiter='\t', auto=auto)
+    return _file_csv(obj, path, delimiter="\t", auto=auto)
 
 
 def _file_xlsx(obj, path, auto=False):
@@ -224,8 +261,8 @@ def _get_xlsx(obj, auto):
     :return: new workbook
 
     """
-    col_widths = defaultdict(int)
-    col = 'A'
+    col_widths: Dict[Any, float] = defaultdict(float)
+    col = "A"
 
     # Create a new workbook
     workbook = openpyxl.Workbook()
@@ -234,30 +271,30 @@ def _get_xlsx(obj, auto):
     # Populate cells
     for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
         for col_idx, value in enumerate(data, start=1):
-            col = openpyxl.cell.get_column_letter(col_idx)
-            cell = worksheet.cell('%s%s' % (col, row))
+            cell = worksheet.cell(column=col_idx, row=row)
 
             # wrap text in every cell
-            alignment = openpyxl.styles.Alignment(vertical='top',
-                                                  horizontal='left',
-                                                  wrap_text=True)
-            style = cell.style.copy(alignment=alignment)
+            alignment = openpyxl.styles.Alignment(
+                vertical="top", horizontal="left", wrap_text=True
+            )
+            cell.alignment = alignment
             # and bold header rows
             if row == 1:
-                style = style.copy(font=openpyxl.styles.Font(bold=True))
-            cell.style = style
+                cell.font = openpyxl.styles.Font(bold=True)
 
             # convert incompatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
-            if not isinstance(value, (int, float, str, datetime.datetime)):
-                value = str(value)
-            cell.value = value
+            if isinstance(value, (int, float, datetime.datetime)):
+                cell.value = value
+            else:
+                cell.value = str(value)
 
             # track cell width
-            col_widths[col] = max(col_widths[col], _width(str(value)))
+            col_widths[col_idx] = max(col_widths[col_idx], _width(str(value)))
 
     # Add filter up to the last column
-    worksheet.auto_filter.ref = "A1:%s1" % col
+    col_letter = openpyxl.utils.get_column_letter(len(col_widths))
+    worksheet.auto_filter.ref = "A1:%s1" % col_letter
 
     # Set column width based on column contents
     for col in col_widths:
@@ -265,10 +302,11 @@ def _get_xlsx(obj, auto):
             width = XLSX_MAX_WIDTH
         else:
             width = col_widths[col] + XLSX_FILTER_PADDING
-        worksheet.column_dimensions[col].width = width
+        col_letter = openpyxl.utils.get_column_letter(col)
+        worksheet.column_dimensions[col_letter].width = width
 
     # Freeze top row
-    worksheet.freeze_panes = worksheet.cell('A2')
+    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
 
     return workbook
 
@@ -282,13 +320,11 @@ def _width(text):
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {'.yml': _lines_yaml}
+FORMAT_LINES = {".yml": _lines_yaml}
 # Mapping from file extension to file generator
-FORMAT_FILE = {'.csv': _file_csv,
-               '.tsv': _file_tsv,
-               '.xlsx': _file_xlsx}
+FORMAT_FILE = {".csv": _file_csv, ".tsv": _file_tsv, ".xlsx": _file_xlsx}
 # Union of format dictionaries
-FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))
+FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))  # type: ignore
 
 
 def check(ext, get_lines_gen=False, get_file_func=False):
@@ -302,9 +338,9 @@ def check(ext, get_lines_gen=False, get_file_func=False):
     :return: function requested if available
 
     """
-    exts = ', '.join(ext for ext in FORMAT)
-    lines_exts = ', '.join(ext for ext in FORMAT_LINES)
-    file_exts = ', '.join(ext for ext in FORMAT_FILE)
+    exts = ", ".join(ext for ext in FORMAT)
+    lines_exts = ", ".join(ext for ext in FORMAT_LINES)
+    file_exts = ", ".join(ext for ext in FORMAT_FILE)
     fmt = "unknown {{}} format: {} (options: {{}})".format(ext or None)
 
     if get_lines_gen:
@@ -330,3 +366,5 @@ def check(ext, get_lines_gen=False, get_file_func=False):
     if ext not in FORMAT:
         exc = DoorstopError(fmt.format("export", exts))
         raise exc
+
+    return None

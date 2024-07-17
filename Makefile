@@ -1,316 +1,267 @@
 # Project settings
 PROJECT := Doorstop
 PACKAGE := doorstop
-SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
-EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
-# Python settings
-ifndef TRAVIS
-	PYTHON_MAJOR ?= 3
-	PYTHON_MINOR ?= 5
-endif
+# Project paths
+PACKAGES := $(PACKAGE)
+CONFIG := $(wildcard *.py)
+MODULES := $(wildcard $(PACKAGE)/*.py)
 
-# Test settings
-UNIT_TEST_COVERAGE := 98
-INTEGRATION_TEST_COVERAGE := 98
+# Virtual environment paths
+VIRTUAL_ENV ?= .venv
 
-# System paths
-PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
-ifneq ($(findstring win32, $(PLATFORM)), )
-	SYS_PYTHON_DIR := C:\\Python$(PYTHON_MAJOR)$(PYTHON_MINOR)
-	SYS_PYTHON := $(SYS_PYTHON_DIR)\\python.exe
-	SYS_VIRTUALENV := $(SYS_PYTHON_DIR)\\Scripts\\virtualenv.exe
-	# https://bugs.launchpad.net/virtualenv/+bug/449537
-	export TCL_LIBRARY=$(SYS_PYTHON_DIR)\\tcl\\tcl8.5
-else
-	SYS_PYTHON := python$(PYTHON_MAJOR)
-	ifdef PYTHON_MINOR
-		SYS_PYTHON := $(SYS_PYTHON).$(PYTHON_MINOR)
-	endif
-	SYS_VIRTUALENV := virtualenv
-endif
-
-# virtualenv paths
-ENV := env
-ifneq ($(findstring win32, $(PLATFORM)), )
-	BIN := $(ENV)/Scripts
-	OPEN := cmd /c start
-else
-	BIN := $(ENV)/bin
-	ifneq ($(findstring cygwin, $(PLATFORM)), )
-		OPEN := cygstart
-	else
-		OPEN := open
-	endif
-endif
-
-# virtualenv executables
-PYTHON := $(BIN)/python
-PIP := $(BIN)/pip
-EASY_INSTALL := $(BIN)/easy_install
-RST2HTML := $(PYTHON) $(BIN)/rst2html.py
-PDOC := $(PYTHON) $(BIN)/pdoc
-PEP8 := $(BIN)/pep8
-PEP8RADIUS := $(BIN)/pep8radius
-PEP257 := $(BIN)/pep257
-PYLINT := $(BIN)/pylint
-PYREVERSE := $(BIN)/pyreverse
-NOSE := $(BIN)/nosetests
-PYTEST := $(BIN)/py.test
-COVERAGE := $(BIN)/coverage
-MKDOCS := $(BIN)/mkdocs
-
-# Flags for PHONY targets
-DEPENDS_CI := $(ENV)/.depends-ci
-DEPENDS_DEV := $(ENV)/.depends-dev
-ALL := $(ENV)/.all
-
-# Main Targets #################################################################
+# MAIN TASKS ##################################################################
 
 .PHONY: all
-all: depends $(ALL)
-$(ALL): $(SOURCES) $(YAML)
-	$(MAKE) doc pep8 pep257
-	touch $(ALL)  # flag to indicate all setup steps were successful
+all: doctor format check test mkdocs demo ## Run all tasks that determine CI status
 
-.PHONY: ci
-ci: doorstop pep8 pep257 test tests tutorial
+.PHONY: dev
+dev: install .clean-test ## Continuously run all CI tasks when files chanage
+	poetry run sniffer
 
-# Development Installation #####################################################
+.PHONY: dev-install
+dev-install: install
+	poetry build
+	pip install --force dist/doorstop*.whl
 
-.PHONY: env
-env: .virtualenv $(EGG_INFO)
-$(EGG_INFO): Makefile setup.py
-	VIRTUAL_ENV=$(ENV) $(PYTHON) setup.py develop
-	touch $(EGG_INFO)  # flag to indicate package is installed
+.PHONY: run ## Start the program
+run: install
+	poetry run python $(PACKAGE)/gui/main.py
 
-.PHONY: .virtualenv
-.virtualenv: $(PIP)
-$(PIP):
-	$(SYS_VIRTUALENV) --python $(SYS_PYTHON) $(ENV)
-	$(PIP) install --upgrade pip
+.PHONY: demo
+demo: install
+	poetry run python $(PACKAGE)/cli/tests/tutorial.py
 
-.PHONY: depends
-depends: depends-ci depends-dev
+# SYSTEM DEPENDENCIES #########################################################
 
-.PHONY: depends-ci
-depends-ci: env Makefile $(DEPENDS_CI)
-$(DEPENDS_CI): Makefile
-	$(PIP) install --upgrade pep8 pep257 pylint coverage nose
-	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
+.PHONY: doctor
+doctor:  ## Confirm system dependencies are available
+	bin/verchew
 
-.PHONY: depends-dev
-depends-dev: env Makefile $(DEPENDS_DEV)
-$(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc mkdocs markdown wheel
-	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
+# PROJECT DEPENDENCIES ########################################################
 
-# Development Usage ############################################################
+DEPENDENCIES := $(VIRTUAL_ENV)/.poetry-$(shell bin/checksum pyproject.toml poetry.lock)
 
-.PHONY: doorstop
-doorstop: env
-	$(BIN)/doorstop --warn-all --error-all --quiet
+.PHONY: install
+install: $(DEPENDENCIES) .cache
 
-.PHONY: gui
-gui: env
-	$(BIN)/doorstop-gui
+$(DEPENDENCIES): poetry.lock
+	@ rm -rf ~/Library/Preferences/pypoetry
+	@ poetry config virtualenvs.in-project true
+	poetry install
+	@ touch $@
 
-.PHONY: serve
-serve: env
-	$(SUDO) $(BIN)/doorstop-server --debug --launch --port 80
+ifndef CI
+poetry.lock: pyproject.toml
+	poetry lock --no-update
+	@ touch $@
+endif
 
-# Documentation ################################################################
+.cache:
+	@ mkdir -p .cache
 
-.PHONY: doc
-doc: readme verify-readme uml apidocs mkdocs
+# CHECKS ######################################################################
 
-.PHONY: doc-live
-doc-live: doc
-	eval "sleep 3; open http://127.0.0.1:8000" &
-	$(MKDOCS) serve
-
-.PHONY: read
-read: doc
-	$(OPEN) site/index.html
-	$(OPEN) apidocs/$(PACKAGE)/index.html
-	$(OPEN) README-pypi.html
-	$(OPEN) README-github.html
-
-.PHONY: readme
-readme: depends-dev README-github.html README-pypi.html
-README-github.html: README.md
-	pandoc -f markdown_github -t html -o README-github.html README.md
-README-pypi.html: README.rst
-	$(RST2HTML) README.rst README-pypi.html
-%.rst: %.md
-	pandoc -f markdown_github -t rst -o $@ $<
-
-.PHONY: verify-readme
-verify-readme: README.rst CHANGELOG.rst
-	$(PYTHON) setup.py check --restructuredtext --strict --metadata
-
-.PHONY: uml
-uml: depends-dev docs/*.png $(SOURCES)
-docs/*.png:
-	$(PYREVERSE) $(PACKAGE) -p $(PACKAGE) -f ALL -o png --ignore test
-	- mv -f classes_$(PACKAGE).png docs/classes.png
-	- mv -f packages_$(PACKAGE).png docs/packages.png
-
-.PHONY: apidocs
-apidocs: depends-ci apidocs/$(PACKAGE)/index.html
-apidocs/$(PACKAGE)/index.html: $(SOURCES)
-	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
-
-.PHONY: reqs
-reqs: doorstop reqs-html reqs-md reqs-txt
-
-.PHONY: reqs-html
-reqs-html: env docs/gen/*.html
-docs/gen/*.html: $(YAML)
-	$(BIN)/doorstop publish all docs/gen --html
-
-.PHONY: reqs-md
-reqs-md: env docs/gen/*.md
-docs/gen/*.md: $(YAML)
-	$(BIN)/doorstop publish all docs/gen --markdown
-
-.PHONY: reqs-txt
-reqs-txt: env docs/gen/*.txt
-docs/gen/*.txt: $(YAML)
-	$(BIN)/doorstop publish all docs/gen --text
-
-.PHONY: mkdocs
-mkdocs: depends-dev site/index.html
-site/index.html: mkdocs.yml docs/*.md
-	$(MKDOCS) build --clean --strict
-
-# Static Analysis ##############################################################
+.PHONY: format
+format: install
+	poetry run isort $(PACKAGES)
+	poetry run black $(PACKAGES)
+	@ echo
 
 .PHONY: check
-check: pep8 pep257 pylint
+check: install format  ## Run formaters, linters, and static analysis
+ifdef CI
+	git diff --exit-code -- '***.py'
+endif
+	poetry run mypy $(PACKAGES) --config-file=.mypy.ini
+	poetry run pylint $(PACKAGES) --rcfile=.pylint.ini
+	poetry run pydocstyle $(PACKAGES) $(CONFIG)
 
-.PHONY: pep8
-pep8: depends-ci
-# E501: line too long (checked by PyLint)
-	$(PEP8) $(PACKAGE) --ignore=E501
+# TESTS #######################################################################
 
-.PHONY: pep257
-pep257: depends-ci
-	$(PEP257) $(PACKAGE)
+RANDOM_SEED ?= $(shell date +%s)
 
-.PHONY: pylint
-pylint: depends-ci
-	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc
-
-.PHONY: fix
-fix: depends-dev
-	$(PEP8RADIUS) --docformatter --in-place
-
-# Testing ######################################################################
+PYTEST_OPTIONS := --doctest-modules
+ifndef DISABLE_COVERAGE
+PYTEST_OPTIONS += --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
+endif
+ifdef CI
+PYTEST_OPTIONS += --cov-report=xml
+endif
 
 .PHONY: test
-test: depends-ci .clean-test
-	$(NOSE) --config=.noserc
-ifndef TRAVIS
-	$(COVERAGE) html --directory htmlcov --fail-under=$(UNIT_TEST_COVERAGE)
+test: test-all ## Run unit and integration tests
+
+.PHONY: test-unit
+test-unit: install
+	poetry run pytest $(PACKAGE) $(PYTEST_OPTIONS)
+ifndef DISABLE_COVERAGE
+	@ echo
+	poetry run coveragespace update unit
 endif
 
-.PHONY: tests
-tests: depends-ci .clean-test
-	TEST_INTEGRATION=1 $(NOSE) --config=.noserc --cover-package=$(PACKAGE) -xv
-ifndef TRAVIS
-	$(COVERAGE) html --directory htmlcov --fail-under=$(INTEGRATION_TEST_COVERAGE)
+.PHONY: test-int
+test-int: test-all
+
+.PHONY: test-all
+test-all: install
+	TEST_INTEGRATION=true poetry run pytest $(PACKAGES) $(PYTEST_OPTIONS)
+ifndef DISABLE_COVERAGE
+	@ echo
+	poetry run coveragespace update overall
 endif
 
-.PHONY: tutorial
-tutorial: env
-	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
+.PHONY: test-cover
+test-cover: install
+# Run first to generate coverage data current code.
+	TEST_INTEGRATION=true poetry run pytest doorstop --doctest-modules --cov=doorstop --cov-report=xml --cov-report=term-missing
+# Run second to generate coverage data for the code in the develop branch.
+	TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(shell git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
 
 .PHONY: read-coverage
 read-coverage:
-	$(OPEN) htmlcov/index.html
+	bin/open htmlcov/index.html
 
-# Cleanup ######################################################################
+# DOCUMENTATION ###############################################################
+
+MKDOCS_INDEX := site/index.html
+
+.PHONY: docs
+docs: mkdocs uml ## Generate documentation and UML
+
+.PHONY: mkdocs
+mkdocs: install $(MKDOCS_INDEX)
+$(MKDOCS_INDEX): docs/requirements.txt mkdocs.yml docs/*.md
+	@ mkdir -p docs/about
+	@ cd docs && ln -sf ../README.md index.md
+	@ cd docs/about && ln -sf ../../CHANGELOG.md changelog.md
+	@ cd docs/about && ln -sf ../../CONTRIBUTING.md contributing.md
+	@ cd docs/about && ln -sf ../../LICENSE.md license.md
+	poetry run mkdocs build --clean --strict
+
+docs/requirements.txt: poetry.lock
+	@ poetry run pip list --format=freeze | grep mkdocs > $@
+	@ poetry run pip list --format=freeze | grep Pygments >> $@
+
+.PHONY: uml
+uml: install docs/*.png
+docs/*.png: $(MODULES)
+	poetry run pyreverse $(PACKAGE) -p $(PACKAGE) -a 1 -f ALL -o png --ignore tests
+	- mv -f classes_$(PACKAGE).png docs/classes.png
+	- mv -f packages_$(PACKAGE).png docs/packages.png
+
+.PHONY: mkdocs-serve
+mkdocs-serve: mkdocs
+	eval "sleep 3; bin/open http://127.0.0.1:8000" &
+	poetry run mkdocs serve
+
+# REQUIREMENTS ################################################################
+
+DOORSTOP := poetry run doorstop
+
+YAML := $(wildcard */*.yml */*/*.yml */*/*/*/*.yml)
+
+.PHONY: reqs
+reqs: doorstop reqs-html reqs-latex reqs-md reqs-pdf reqs-txt
+
+.PHONY: reqs-html
+reqs-html: install docs/gen/*.html
+docs/gen/*.html: $(YAML)
+	$(DOORSTOP) publish all docs/gen --html
+
+.PHONY: reqs-latex
+reqs-latex: install docs/gen/*.tex
+docs/gen/*.tex: $(YAML)
+	$(DOORSTOP) publish all docs/gen --latex
+
+.PHONY: reqs-md
+reqs-md: install docs/gen/*.md
+docs/gen/*.md: $(YAML)
+	$(DOORSTOP) publish all docs/gen --markdown
+
+.PHONY: reqs-pdf
+reqs-pdf: reqs-latex
+	cd docs/gen && ./compile.sh
+
+.PHONY: reqs-txt
+reqs-txt: install docs/gen/*.txt
+docs/gen/*.txt: $(YAML)
+	$(DOORSTOP) publish all docs/gen --text
+
+# BUILD #######################################################################
+
+DIST_FILES := dist/*.tar.gz dist/*.whl
+EXE_FILES := dist/$(PROJECT).*
+
+.PHONY: dist
+dist: install $(DIST_FILES)
+$(DIST_FILES): $(MODULES) pyproject.toml
+	rm -f $(DIST_FILES)
+	poetry build
+
+.PHONY: exe
+exe: install $(EXE_FILES)
+$(EXE_FILES): $(MODULES) $(PROJECT).spec
+	# For framework/shared support: https://github.com/yyuu/pyenv/wiki
+	poetry run pyinstaller doorstop.spec        --noconfirm --clean
+	poetry run pyinstaller doorstop-gui.spec    --noconfirm --clean
+	poetry run pyinstaller doorstop-server.spec --noconfirm --clean
+
+$(PROJECT).spec:
+	@# The modules mdx_outline and mdx_math are not used in doorstop through import statements,
+	@# instead they are imported as markdown extensions. So these are explicitly referenced
+	@# here as "hidden-imports" so that pyinstaller will pick them up.
+	poetry run pyi-makespec doorstop/cli/main.py    --onefile --windowed --name=doorstop --hidden-import=mdx_outline --hidden-import=mdx_math
+	@# To include additional data files in the doorstop executable built by pyinstaller
+	@# they can be added to pyi-makespec using "--add-data", but that seems to become
+	@# platform dependent according to the pyi-makespec documentation, so a sed command
+	@# is used here to directly insert the data file names into the spec file.
+	sed 's/datas=\[/datas=\[("doorstop\/views", "doorstop\/views"), ("doorstop\/core\/files", "doorstop\/core\/files")/' --in-place doorstop.spec
+	poetry run pyi-makespec doorstop/gui/main.py    --onefile --windowed --name=doorstop-gui
+	poetry run pyi-makespec doorstop/server/main.py --onefile --windowed --name=doorstop-server
+
+# RELEASE #####################################################################
+
+.PHONY: upload
+upload: dist ## Upload the current version to PyPI
+	git diff --name-only --exit-code
+	poetry publish
+	bin/open https://pypi.org/project/$(PROJECT)
+
+# CLEANUP #####################################################################
 
 .PHONY: clean
-clean: .clean-dist .clean-test .clean-doc .clean-build
-	rm -rf $(ALL)
-
-.PHONY: clean-env
-clean-env: clean
-	rm -rf $(ENV)
+clean: .clean-dev-install .clean-build .clean-docs .clean-test .clean-install ## Delete all generated and temporary files
 
 .PHONY: clean-all
-clean-all: clean clean-env .clean-workspace
+clean-all: clean
+	rm -rf $(VIRTUAL_ENV)
 
-.PHONY: .clean-build
-.clean-build:
-	find $(PACKAGE) -name '*.pyc' -delete
-	find $(PACKAGE) -name '__pycache__' -delete
-	rm -rf $(EGG_INFO)
+.PHONY: .clean-install
+.clean-install:
+	find $(PACKAGES) -name '__pycache__' | xargs rm -rf
+	rm -rf *.egg-info
 
-.PHONY: .clean-doc
-.clean-doc:
-	rm -rf README.rst apidocs *.html docs/*.png
-	rm -rf docs/gen
-	rm -rf docs/sphinx/modules.rst docs/sphinx/$(PACKAGE)*.rst docs/sphinx/_build
-	rm -rf pages/docs/ pages/reqs/
+.PHONY: .clean-dev-install
+.clean-dev-install:
+	- pip uninstall --yes dist/doorstop*.whl
 
 .PHONY: .clean-test
 .clean-test:
-	rm -rf .coverage htmlcov
+	rm -rf .cache .pytest .coverage htmlcov
 
-.PHONY: .clean-dist
-.clean-dist:
-	rm -rf dist build
+.PHONY: .clean-docs
+.clean-docs:
+	rm -rf docs/*.png site
 
-.PHONY: .clean-workspace
-.clean-workspace:
-	rm -rf *.sublime-workspace
+.PHONY: .clean-build
+.clean-build:
+	rm -rf *.spec dist build
 
-# Release ######################################################################
+# HELP ########################################################################
 
-.PHONY: register-test
-register-test: doc
-	$(PYTHON) setup.py register --strict --repository https://testpypi.python.org/pypi
+.PHONY: help
+help: install
+	@ grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: upload-test
-upload-test: register-test
-	$(PYTHON) setup.py sdist upload --repository https://testpypi.python.org/pypi
-	$(PYTHON) setup.py bdist_wheel upload --repository https://testpypi.python.org/pypi
-	$(OPEN) https://testpypi.python.org/pypi/$(PROJECT)
-
-.PHONY: register
-register: doc
-	$(PYTHON) setup.py register --strict
-
-.PHONY: upload
-upload: .git-no-changes register
-	$(PYTHON) setup.py sdist upload
-	$(PYTHON) setup.py bdist_wheel upload
-	$(OPEN) https://pypi.python.org/pypi/$(PROJECT)
-
-.PHONY: .git-no-changes
-.git-no-changes:
-	@ if git diff --name-only --exit-code;        \
-	then                                          \
-		echo Git working copy is clean...;        \
-	else                                          \
-		echo ERROR: Git working copy is dirty!;   \
-		echo Commit your changes and try again.;  \
-		exit -1;                                  \
-	fi;
-
-# System Installation ##########################################################
-
-.PHONY: develop
-develop:
-	$(SYS_PYTHON) setup.py develop
-
-.PHONY: install
-install:
-	$(SYS_PYTHON) setup.py install
-
-.PHONY: download
-download:
-	$(SYS_PYTHON) -m pip install $(PROJECT)
+.DEFAULT_GOAL := help

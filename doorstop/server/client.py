@@ -1,25 +1,27 @@
 #!/usr/bin/env python
+# SPDX-License-Identifier: LGPL-3.0-only
 
 """REST client to request item numbers."""
 
+import sys
+
 import requests
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.server import utilities
-from doorstop import settings
 
 log = common.logger(__name__)
 
 
-def exists(path='/documents'):
+def exists(path="/documents"):
     """Determine if the server exists."""
     found = False
     url = utilities.build_url(path=path)
     if url:
         log.debug("looking for {}...".format(url))
         try:
-            response = requests.head(url)
+            response = requests.head(url, timeout=10)
         except requests.exceptions.RequestException as exc:
             log.debug(exc)
         else:
@@ -44,23 +46,24 @@ def check():
 def get_next_number(prefix):
     """Get the next number for the given document prefix."""
     number = None
-    url = utilities.build_url(path='/documents/{p}/numbers'.format(p=prefix))
+    url = utilities.build_url(
+        path="/documents/{p}/numbers?format=json".format(p=prefix)
+    )
     if not url:
         log.info("no server to get the next number from")
         return None
-    headers = {'content-type': 'application/json'}
-    response = requests.post(url, headers=headers)
+    headers = {"content-type": "application/json"}
+    response = requests.post(url, headers=headers, timeout=10)
     if response.status_code == 200:
         data = response.json()
-        number = data.get('next')
+        number = data.get("next")
     if number is None:
         raise DoorstopError("bad response from: {}".format(url))
     log.info("next number from the server: {}".format(number))
     return number
 
 
-if __name__ == '__main__':  # pragma: no cover (manual test)
-    import sys
+if __name__ == "__main__":
     if len(sys.argv) != 2:
-        exit("Usage: {} <PREFIX>".format(sys.argv[0]))
+        sys.exit("Usage: {} <PREFIX>".format(sys.argv[0]))
     print(get_next_number(sys.argv[-1]))

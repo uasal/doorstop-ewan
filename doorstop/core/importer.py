@@ -1,20 +1,21 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Functions to import exiting documents and items."""
 
+import csv
 import os
 import re
-import csv
 import warnings
+from typing import Any
 
 import openpyxl
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core.types import UID
+from doorstop.core.builder import _get_tree
 from doorstop.core.document import Document
 from doorstop.core.item import Item
-from doorstop.core.builder import _get_tree
-from doorstop import settings
-
+from doorstop.core.types import UID
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
@@ -62,12 +63,10 @@ def create_document(prefix, path, parent=None, tree=None):
         document = tree.create_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
-            raise exc from None
+            raise exc from None  # pylint: disable=raising-bad-type
 
         # Create the document despite an unavailable parent
-        document = Document.new(tree,
-                                path, tree.root, prefix,
-                                parent=parent)
+        document = Document.new(tree, path, tree.root, prefix, parent=parent)
         log.warning(exc)
         _documents.append(document)
 
@@ -100,9 +99,7 @@ def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
 
     # Add an item using the specified UID
     log.info("importing item '{}'...".format(uid))
-    item = Item.new(tree, document,
-                    document.path, document.root, uid,
-                    auto=False)
+    item = Item.new(tree, document, document.path, document.root, uid, auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()
@@ -134,7 +131,7 @@ def _file_yml(path, document, **_):
         add_item(document.prefix, uid, attrs=attrs, document=document)
 
 
-def _file_csv(path, document, delimiter=',', mapping=None):
+def _file_csv(path, document, delimiter=",", mapping=None):
     """Import items from a CSV export to a document.
 
     :param path: input file location
@@ -147,16 +144,17 @@ def _file_csv(path, document, delimiter=',', mapping=None):
 
     # Parse the file
     log.info("reading rows in {}...".format(path))
-    with open(path, 'r', encoding='utf-8') as stream:
+    with open(path, "r", encoding="utf-8") as stream:
         reader = csv.reader(stream, delimiter=delimiter)
         for _row in reader:
             row = []
+            value: Any
             for value in _row:
                 # convert string booleans
                 if isinstance(value, str):
-                    if value.lower() == 'true':
+                    if value.lower() == "true":
                         value = True
-                    elif value.lower() == 'false':
+                    elif value.lower() == "false":
                         value = False
                 row.append(value)
             rows.append(row)
@@ -177,7 +175,7 @@ def _file_tsv(path, document, mapping=None):
     :param mapping: dictionary mapping custom to standard attribute names
 
     """
-    _file_csv(path, document, delimiter='\t', mapping=mapping)
+    _file_csv(path, document, delimiter="\t", mapping=mapping)
 
 
 def _file_xlsx(path, document, mapping=None):
@@ -193,8 +191,10 @@ def _file_xlsx(path, document, mapping=None):
 
     # Parse the file
     log.debug("reading rows in {}...".format(path))
-    workbook = openpyxl.load_workbook(path, use_iterators=True)
+    workbook = openpyxl.load_workbook(path, data_only=True)
     worksheet = workbook.active
+
+    index = 0
 
     # Extract header and data rows
     for index, row in enumerate(worksheet.iter_rows()):
@@ -208,7 +208,7 @@ def _file_xlsx(path, document, mapping=None):
             data.append(row2)
 
     # Warn about workbooks that may be sized incorrectly
-    if index >= 2 ** 20 - 1:  # pragma: no cover (integration test)
+    if index >= 2**20 - 1:
         msg = "workbook contains the maximum number of rows"
         warnings.warn(msg, Warning)
 
@@ -234,9 +234,8 @@ def _itemize(header, data, document, mapping=None):
         attrs = {}
         uid = None
         for index, value in enumerate(row):
-
             # Key lookup
-            key = str(header[index]).lower().strip() if header[index] else ''
+            key = str(header[index]).lower().strip() if header[index] else ""
             if not key:
                 continue
 
@@ -249,25 +248,44 @@ def _itemize(header, data, document, mapping=None):
                     break
 
             # Convert values for particular keys
-            if key in ('uid', 'id'):  # 'id' for backwards compatibility
+            if key in ("uid", "id"):  # 'id' for backwards compatibility
                 uid = value
-            elif key == 'links':
+            elif key == "links":
                 # split links into a list
                 attrs[key] = _split_list(value)
-            elif key == 'active':
+
+            elif key == "references" and (value is not None):
+                ref_items = value.split("\n")
+                if ref_items[0] != "":
+                    ref = []
+                    for ref_item in ref_items:
+                        ref_item_components = ref_item.split(",")
+
+                        ref_type = ref_item_components[0].split(":")[1]
+                        ref_path = ref_item_components[1].split(":")[1]
+
+                        ref_dict = {"type": ref_type, "path": ref_path}
+                        if len(ref_item_components) == 3:
+                            ref_keyword = ref_item_components[2].split(":")[1]
+                            ref_dict["keyword"] = ref_keyword
+
+                        ref.append(ref_dict)
+
+                    attrs[key] = ref
+            elif key == "active":
                 # require explicit disabling
-                attrs['active'] = value is not False
+                attrs["active"] = value is not False
             else:
                 attrs[key] = value
 
         # Get the next UID if the row is a new item
-        if attrs.get('text') and uid in (None, '', settings.PLACEHOLDER):
-            uid = UID(document.prefix, document.sep,
-                      document.next_number, document.digits)
+        if attrs.get("text") and uid in (None, "", settings.PLACEHOLDER):
+            uid = UID(
+                document.prefix, document.sep, document.next_number, document.digits
+            )
 
         # Convert the row to an item
         if uid and uid != settings.PLACEHOLDER:
-
             # Delete the old item
             try:
                 item = document.find_item(uid)
@@ -279,8 +297,7 @@ def _itemize(header, data, document, mapping=None):
 
             # Import the item
             try:
-                item = add_item(document.prefix, uid,
-                                attrs=attrs, document=document)
+                item = add_item(document.prefix, uid, attrs=attrs, document=document)
             except DoorstopError as exc:
                 log.warning(exc)
 
@@ -294,10 +311,12 @@ def _split_list(value):
 
 
 # Mapping from file extension to file reader
-FORMAT_FILE = {'.yml': _file_yml,
-               '.csv': _file_csv,
-               '.tsv': _file_tsv,
-               '.xlsx': _file_xlsx}
+FORMAT_FILE = {
+    ".yml": _file_yml,
+    ".csv": _file_csv,
+    ".tsv": _file_tsv,
+    ".xlsx": _file_xlsx,
+}
 
 
 def check(ext):
@@ -308,7 +327,7 @@ def check(ext):
     :return: file importer if available
 
     """
-    exts = ', '.join(ext for ext in FORMAT_FILE)
+    exts = ", ".join(ext for ext in FORMAT_FILE)
     msg = "unknown import format: {} (options: {})".format(ext or None, exts)
     exc = DoorstopError(msg)
     try:

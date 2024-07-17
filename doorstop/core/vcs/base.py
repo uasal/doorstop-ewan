@@ -1,41 +1,45 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Abstract interface to version control systems."""
 
-import os
 import fnmatch
+import os
 import subprocess
-from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
+from abc import ABCMeta, abstractmethod
+from typing import List, Optional, Tuple
 
-from doorstop import common
-from doorstop import settings
+from doorstop import common, settings
 
 log = common.logger(__name__)
 
 
-class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
+class BaseWorkingCopy(metaclass=ABCMeta):
     """Abstract base class for VCS working copies."""
 
-    DIRECTORY = None  # special hidden directory for the working copy
-    IGNORES = ()  # hidden filenames containing ignore patterns
+    DIRECTORY: Optional[str] = None  # special hidden directory for the working copy
+    IGNORES: Tuple = ()  # hidden filenames containing ignore patterns
 
     def __init__(self, path):
         self.path = path
-        self._ignores_cache = None
-        self._path_cache = None
-        self._show_ci_warning = True
+        self._ignores_cache: Optional[List[str]] = None
+        self._path_cache: Optional[List[Tuple[str, str, str]]] = None
 
     @staticmethod
     def relpath(path):
         """Get a relative path to the working copy root for commands."""
-        return os.path.relpath(path).replace('\\', '/')
+        return os.path.relpath(path).replace("\\", "/")
 
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
         """Call a command with string arguments."""
-        log.debug("$ {}".format(' '.join(args)))
-        if return_stdout:
-            return subprocess.check_output(args).decode('utf-8')
-        else:
-            return subprocess.call(args)
+        log.debug("$ %s", " ".join(args))
+        try:
+            if return_stdout:
+                return subprocess.check_output(args).decode("utf-8")
+            else:
+                return subprocess.call(args)
+        except FileNotFoundError:
+            raise common.DoorstopError("Command not found: {}".format(args[0]))
 
     @abstractmethod
     def lock(self, path):  # pragma: no cover (abstract method)
@@ -73,8 +77,8 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
                 if os.path.isfile(path):
                     for line in common.read_lines(path):
                         pattern = line.strip(" @\\/*\n")
-                        if pattern and not pattern.startswith('#'):
-                            self._ignores_cache.append('*' + pattern + '*')
+                        if pattern and not pattern.startswith("#"):
+                            self._ignores_cache.append("*" + pattern + "*")
         yield from self._ignores_cache
 
     @property
@@ -86,13 +90,13 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
             for dirpath, _, filenames in os.walk(self.path):
                 for filename in filenames:
                     path = os.path.join(dirpath, filename)
+                    relpath = os.path.relpath(path, self.path)
                     # Skip ignored paths
-                    if self.ignored(path):
+                    if self.ignored(relpath):
                         continue
                     # Skip hidden paths
-                    if os.path.sep + '.' in path:
+                    if os.path.sep + "." in os.path.sep + relpath:
                         continue
-                    relpath = os.path.relpath(path, self.path)
                     self._path_cache.append((path, filename, relpath))
         yield from self._path_cache
 
@@ -100,10 +104,5 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         """Determine if a path matches an ignored pattern."""
         for pattern in self.ignores:
             if fnmatch.fnmatch(path, pattern):
-                if pattern == '*build*' and os.getenv('CI'):
-                    if self._show_ci_warning:
-                        log.critical("cannot ignore 'build' on the CI server")
-                        self._show_ci_warning = False
-                else:
-                    return True
+                return True
         return False
