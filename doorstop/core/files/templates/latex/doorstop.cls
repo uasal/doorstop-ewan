@@ -224,7 +224,7 @@
 \fancyhf{}% Clear all settings
 \fancyhead[RE,RO]{\raisebox{0.5cm}{\textsf{\begin{tabular}{p{5cm}p{2.5cm}p{3.5cm}}
 \textbf{\large\docname} & {\footnotesize\textbf{Repository:}} &{\footnotesize\textbf{Workflow:}}\tabularnewline
-\multirow{3}{5cm}[1ex]{\textit{\docdef}}&\textrm{\small\repo} & \textrm{\small\gitBranch} \tabularnewline
+\multirow{3}{5cm}[1ex]{\textit{\docdef}}&\textrm{\small\gitlabrepo} & \textrm{\small\gitBranch} \tabularnewline
 &{\footnotesize\textbf{Date:}} & {\footnotesize\textbf{Commit:}}\tabularnewline
 &\textrm{\small\today} & \textrm{\small\gitDescribe} \tabularnewline
 \end{tabular}}}}
