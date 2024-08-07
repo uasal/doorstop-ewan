@@ -317,7 +317,7 @@ def get_document_attributes(obj, is_html=False, extensions=None):
     doc_attributes = {}
     doc_attributes["name"] = "doc-" + obj.prefix
     doc_attributes["title"] = "Pearl Requirements"
-    doc_attributes["ref"] = "GitHub"
+    doc_attributes["ref"] = "GitLab"
     doc_attributes["by"] = "-"
     doc_attributes["major"] = "-"
     doc_attributes["minor"] = ""
