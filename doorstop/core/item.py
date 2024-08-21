@@ -111,6 +111,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
     DEFAULT_ITEMFORMAT = "yaml"
+    DEFAULT_TESTING_METHODS = Text()
+    DEFAULT_TIER = Text()
+    DEFAULT_STATUS = Text()
+    DEFAULT_ARTIFACT = Text()
+    DEFAULT_TESTING_NOTES = Text()
 
     def __init__(self, document, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
@@ -150,6 +155,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["text"] = Item.DEFAULT_TEXT
         self._data["notes"] = Item.DEFAULT_NOTES
         self._data["ref"] = Item.DEFAULT_REF
+        self._data["testing method(s)"] = Item.DEFAULT_TESTING_METHODS # type: ignore
+        self._data["tier"] = Item.DEFAULT_TIER # type: ignore
+        self._data["status"] = Item.DEFAULT_STATUS # type: ignore
+        self._data["artifact"] = Item.DEFAULT_ARTIFACT # type: ignore
+        self._data["testing notes"] = Item.DEFAULT_ARTIFACT # type:ignore
         self._data["references"] = None  # type: ignore
         self._data["links"] = set()  # type: ignore
         if settings.ENABLE_HEADERS:
@@ -258,6 +268,16 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == "text":
                 value = Text(value)
             elif key == "notes":
+                value = Text(value)
+            elif key == "status":
+                value = Text(value)
+            elif key == "tier":
+                value = Text(value)
+            elif key == "artifact":
+                value = Text(value)
+            elif key == "testing method(s)":
+                value = Text(value)
+            elif key == "testing notes":
                 value = Text(value)
             elif key == "ref":
                 value = value.strip()
@@ -381,6 +401,16 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == "reviewed":
                 value = value.yaml  # type: ignore
             elif key == "notes":
+                value = value.yaml  # type: ignore
+            elif key == "status":
+                value = value.yaml  # type: ignore
+            elif key == "tier":
+                value = value.yaml  # type: ignore
+            elif key == "artifact":
+                value = value.yaml  # type: ignore
+            elif key == "testing method(s)":
+                value = value.yaml  # type: ignore
+            elif key == "testing notes":
                 value = value.yaml  # type: ignore
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
@@ -558,6 +588,66 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def notes(self, value):
         """Set the item's text."""
         self._data["notes"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def testing_methods(self):
+        """Get the item's text."""
+        return self._data["testing method(s)"]
+
+    @testing_methods.setter  # type: ignore
+    @auto_save
+    def testing_methods(self, value):
+        """Set the item's text."""
+        self._data["testing method(s)"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def tier(self):
+        """Get the item's text."""
+        return self._data["tier"]
+
+    @tier.setter  # type: ignore
+    @auto_save
+    def tier(self, value):
+        """Set the item's text."""
+        self._data["tier"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def status(self):
+        """Get the item's text."""
+        return self._data["status"]
+
+    @status.setter  # type: ignore
+    @auto_save
+    def status(self, value):
+        """Set the item's text."""
+        self._data["status"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def artifact(self):
+        """Get the item's text."""
+        return self._data["artifact"]
+
+    @artifact.setter  # type: ignore
+    @auto_save
+    def artifact(self, value):
+        """Set the item's text."""
+        self._data["artifact"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def testing_notes(self):
+        """Get the item's text."""
+        return self._data["testing notes"]
+
+    @testing_notes.setter  # type: ignore
+    @auto_save
+    def testing_notes(self, value):
+        """Set the item's text."""
+        self._data["testing notes"] = Text(value)
 
     @property  # type: ignore
     @auto_load
