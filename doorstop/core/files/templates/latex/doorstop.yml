@@ -13,6 +13,8 @@ usepackage:
   ragged2e:
   tabularx:
   longtable:
+  datetime:
+    - ddmmyyyy
   lastpage:
   fancyvrb:
   textalpha:
