@@ -73,7 +73,7 @@
 \RequirePackage{xstring}
 \RequirePackage[compact]{titlesec}
 \RequirePackage{appendix}
-\RequirePackage[ddmmyyyy]{datetime}
+\RequirePackage[yyyymmdd]{datetime}
 % The following packages are REQUIRED to make the Doorstop publish functions work.
 \RequirePackage{amsmath}
 \RequirePackage{ulem}

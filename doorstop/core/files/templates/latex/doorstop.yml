@@ -14,7 +14,7 @@ usepackage:
   tabularx:
   longtable:
   datetime:
-    - ddmmyyyy
+    - yyyymmdd
   lastpage:
   fancyvrb:
   textalpha:
