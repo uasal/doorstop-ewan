@@ -45,21 +45,21 @@ class MarkdownPublisher(BasePublisher):
         markdown = "\n".join(lines)
         common.write_text(markdown, path)
 
-    def lines_rvm(self, obj, **kwargs):
-        """Requirements Verification Matrix Lines"""
-        # title
-        title = '# Requirements Verification Matrix'
-        yield title
-        # header
-        table_format = "| --------- |"
-        table_adjustments = "---------- |"
-        count = 0
-        linkify = kwargs.get("linkify", False)
-        to_html = kwargs.get("to_html", False)
-
-        # header data / table start
-        for item in iter_items(obj):
-            if item.
+    # def lines_rvm(self, obj, **kwargs):
+    #     """Requirements Verification Matrix Lines"""
+    #     # title
+    #     title = '# Requirements Verification Matrix'
+    #     yield title
+    #     # header
+    #     table_format = "| --------- |"
+    #     table_adjustments = "---------- |"
+    #     count = 0
+    #     linkify = kwargs.get("linkify", False)
+    #     to_html = kwargs.get("to_html", False)
+    #
+    #     # header data / table start
+    #     for item in iter_items(obj):
+    #         if item.
 
 
 
