@@ -111,7 +111,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
     DEFAULT_ITEMFORMAT = "yaml"
-    DEFAULT_TESTING_METHODS = Text()
+    DEFAULT_TEST_METHODS = Text()
     DEFAULT_TIER = Text()
     DEFAULT_STATUS = Text()
     DEFAULT_ARTIFACT = Text()
@@ -155,11 +155,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["text"] = Item.DEFAULT_TEXT
         self._data["notes"] = Item.DEFAULT_NOTES
         self._data["ref"] = Item.DEFAULT_REF
-        self._data["testing method(s)"] = Item.DEFAULT_TESTING_METHODS # type: ignore
+        self._data["testing method(s)"] = Item.DEFAULT_TEST_METHODS # type: ignore
         self._data["tier"] = Item.DEFAULT_TIER # type: ignore
         self._data["status"] = Item.DEFAULT_STATUS # type: ignore
         self._data["artifact"] = Item.DEFAULT_ARTIFACT # type: ignore
-        self._data["testing notes"] = Item.DEFAULT_ARTIFACT # type:ignore
+        self._data["testing notes"] = Item.DEFAULT_TESTING_NOTES # type:ignore
         self._data["references"] = None  # type: ignore
         self._data["links"] = set()  # type: ignore
         if settings.ENABLE_HEADERS:
@@ -408,7 +408,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = value.yaml  # type: ignore
             elif key == "artifact":
                 value = value.yaml  # type: ignore
-            elif key == "testing method(s)":
+            elif key == "test method(s)":
                 value = value.yaml  # type: ignore
             elif key == "testing notes":
                 value = value.yaml  # type: ignore
@@ -593,13 +593,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def testing_methods(self):
         """Get the item's text."""
-        return self._data["testing method(s)"]
+        return self._data["test method(s)"]
 
     @testing_methods.setter  # type: ignore
     @auto_save
     def testing_methods(self, value):
         """Set the item's text."""
-        self._data["testing method(s)"] = Text(value)
+        self._data["test method(s)"] = Text(value)
 
     @property  # type: ignore
     @auto_load
