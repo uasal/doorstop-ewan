@@ -360,7 +360,7 @@ class LaTeXPublisher(BasePublisher):
                 split_line_text = line.split("[")
                 # Text before the link
                 text = str(split_line_text[0])
-                text = text.replace("_", "\_")
+                text = text.replace("_", "\\_")
                 # Rest of line / unformatted with no text part
                 remainder = str(split_line_text[1])
                 split_link_prefix = remainder.split("](")
@@ -368,15 +368,15 @@ class LaTeXPublisher(BasePublisher):
                 # Markdown URL prefix
                 url_prefix = "{" + str(split_link_prefix[0]) + "}"
                 link = "{" + str(split_link[0]) + "}"
-                url_prefix = url_prefix.replace("_", "\_")
-                rest_text = str(split_link[1]).replace("_", "\_")
-                output_line = text + "\href" + link + url_prefix + rest_text
+                url_prefix = url_prefix.replace("_", "\\_")
+                rest_text = str(split_link[1]).replace("_", "\\_")
+                output_line = text + "\\href" + link + url_prefix + rest_text
                 yield output_line
             elif "<br>" in line:
                 output_line = line.replace("<br> <br>", "\\par ").replace("<br><br>", "\\par ").replace("<br>", "\\par")
-                yield output_line.replace("^", "\^").replace("_", "\_")
+                yield output_line.replace("^", "\\^").replace("_", "\\_")
             else:
-                output_line = line.replace("^", "\^").replace("_", "\_")
+                output_line = line.replace("^", "\\^").replace("_", "\\_")
                 yield output_line
 
 

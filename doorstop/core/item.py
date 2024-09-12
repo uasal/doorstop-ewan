@@ -155,7 +155,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["text"] = Item.DEFAULT_TEXT
         self._data["notes"] = Item.DEFAULT_NOTES
         self._data["ref"] = Item.DEFAULT_REF
-        self._data["testing method(s)"] = Item.DEFAULT_TEST_METHODS # type: ignore
+        self._data["test method(s)"] = Item.DEFAULT_TEST_METHODS # type: ignore
         self._data["tier"] = Item.DEFAULT_TIER # type: ignore
         self._data["status"] = Item.DEFAULT_STATUS # type: ignore
         self._data["artifact"] = Item.DEFAULT_ARTIFACT # type: ignore
@@ -275,7 +275,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = Text(value)
             elif key == "artifact":
                 value = Text(value)
-            elif key == "testing method(s)":
+            elif key == "test method(s)":
                 value = Text(value)
             elif key == "testing notes":
                 value = Text(value)
@@ -316,7 +316,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             # Parse YAML data from text
             data = common.load_yaml(text, self.path)
         else:
-            msg = "unknwon item format detected during load: {}({})".format(
+            msg = "unknown item format detected during load: {}({})".format(
                 self.uid, self.itemformat
             )
             raise DoorstopError(msg) from None
@@ -343,7 +343,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             # Dump the data to YAML
             text = self._dump(data)
         else:
-            msg = "unknwon item format detected during save: {}({})".format(
+            msg = "unknown item format detected during save: {}({})".format(
                 self.uid, self.itemformat
             )
             raise DoorstopError(msg) from None
@@ -409,9 +409,9 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == "artifact":
                 value = value.yaml  # type: ignore
             elif key == "test method(s)":
-                value = value.yaml  # type: ignore
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
             elif key == "testing notes":
-                value = value.yaml  # type: ignore
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
             data[key] = value
@@ -591,13 +591,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     @property  # type: ignore
     @auto_load
-    def testing_methods(self):
+    def test_methods(self):
         """Get the item's text."""
         return self._data["test method(s)"]
 
-    @testing_methods.setter  # type: ignore
+    @test_methods.setter  # type: ignore
     @auto_save
-    def testing_methods(self, value):
+    def test_methods(self, value):
         """Set the item's text."""
         self._data["test method(s)"] = Text(value)
 
