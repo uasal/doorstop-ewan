@@ -25,6 +25,7 @@ usepackage:
   gitinfo2:
   parskip:
   silence:
+  csvsimple:
   hyperref:
     # Options are defined as sub-lists.
     - unicode
