@@ -70,6 +70,7 @@
 \RequirePackage{color}
 \RequirePackage{listings}
 \RequirePackage{tikz}
+\RequirePackage{csvsimple}
 \RequirePackage{xstring}
 \RequirePackage[compact]{titlesec}
 \RequirePackage{appendix}
