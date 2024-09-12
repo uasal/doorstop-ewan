@@ -28,7 +28,8 @@ def _trace(self, message, *args, **kws):
 
 logging.addLevelName(logging.DEBUG - 1, "TRACE")
 logging.Logger.trace = _trace  # type: ignore
-
+logging.basicConfig(filename="warning_log.txt", level=logging.DEBUG)
+logging.captureWarnings(True)
 logger = logging.getLogger
 log = logger(__name__)
 
