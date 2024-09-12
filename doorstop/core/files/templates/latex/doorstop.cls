@@ -73,6 +73,7 @@
 \RequirePackage{xstring}
 \RequirePackage[compact]{titlesec}
 \RequirePackage{appendix}
+\RequirePackage[yyyymmdd]{datetime}
 % The following packages are REQUIRED to make the Doorstop publish functions work.
 \RequirePackage{amsmath}
 \RequirePackage{ulem}
@@ -130,8 +131,9 @@
 \definetrim{logotrim}{20pt 100pt 20pt 100pt}
 \def\titlelogo{template/title-logo.png}
 
-% Define the repository href format
-\def\repo{\href{\repourl}{GitHub Repo}}
+% Define the repositories href format
+\def\gitlabrepo{\href{\repourl}{GitLab Repo}}
+\def\githubrepo{\href{\githuburl}{GitHub Repo}}
 
 % Sets the counting depths for TOC
 \setcounter{tocdepth}{3}
@@ -222,8 +224,8 @@
 \pagestyle{fancy}
 \fancyhf{}% Clear all settings
 \fancyhead[RE,RO]{\raisebox{0.5cm}{\textsf{\begin{tabular}{p{5cm}p{2.5cm}p{3.5cm}}
-\textbf{\large\docname} & {\footnotesize\textbf{Repository:}} &{\footnotesize\textbf{Branch:}}\tabularnewline
-\multirow{3}{5cm}[1ex]{\textit{\docdef}}&\textrm{\small\repo} & \textrm{\small\gitBranch} \tabularnewline
+\textbf{\large\docname} & {\footnotesize\textbf{Repository:}} &{\footnotesize\textbf{Workflow:}}\tabularnewline
+\multirow{3}{5cm}[1ex]{\textit{\docdef}}&\textrm{\small\gitlabrepo} & \textrm{\small\gitBranch} \tabularnewline
 &{\footnotesize\textbf{Date:}} & {\footnotesize\textbf{Commit:}}\tabularnewline
 &\textrm{\small\today} & \textrm{\small\gitDescribe} \tabularnewline
 \end{tabular}}}}
@@ -293,8 +295,9 @@
      		{\Huge \textbf{\doctitle\\[0.5cm]}}
      		{\LARGE \textit{\docdef}}\\[0.5cm]
             {\large \textbf{Date: }\today} \vfill
-            {\large \textbf{\repo}} \\[0.2cm]
-			{\large \textbf{Branch: } \gitBranch}
+            {\large \textbf{\gitlabrepo} \textit{- Full Requirements Generation Repository}}\\[0.2cm]
+            {\large \textbf{\githubrepo} \textit{- Levels 0-3 Requirements Repository}}\\[0.2cm]
+			{\large \textbf{Workflow: } \gitBranch}
 			{\large \textbf{ Commit:} \gitDescribe} \vfill
 			{\small \textbf{Authors: } \authors} \\[0.2cm]
             {\small \textbf{Contributors: } \contributors} \vfill

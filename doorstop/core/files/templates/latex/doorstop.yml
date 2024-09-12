@@ -13,6 +13,8 @@ usepackage:
   ragged2e:
   tabularx:
   longtable:
+  datetime:
+    - yyyymmdd
   lastpage:
   fancyvrb:
   textalpha:
@@ -34,7 +36,8 @@ before_begin_document:
   # Define the title for the published document output
   - \def\docname{Pearl Requirements}
   # Define / update the repository link requirements are located for reference
-  - \def\repourl{https://github.com/uasal/pearl_requirements}
+  - \def\repourl{https://gitlab.sc.ascendingnode.tech/pearl-systems/pearl_requirements}
+  - \def\githuburl{https://github.com/uasal/pearl_requirements}
   - \def\access{For access to the repository contact douglase@arizona.edu}
   # Define the 'subtitle' that will be listed under the title.
   - \def\docdef{Descriptions, Owners, Rationales, and Notes}
