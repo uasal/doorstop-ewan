@@ -151,7 +151,7 @@ def _file_csv(path, document, delimiter=",", mapping=None):
             row = []
             value: Any
             for value in _row:
-                if _row[0].startswith("#"):
+                if _row[0].startswith("#") or _row[0].startswith("  "):
                     value = False
                 # convert string booleans
                 elif isinstance(value, str):
