@@ -752,9 +752,9 @@ class LaTeXPublisher(BasePublisher):
                 t=_latex_convert(extract_prefix(self.document))
             )
         )
-        wrapper.append(
-            "\\def\\doctitle{{{n}}}".format(n=_latex_convert(doc_attributes["title"]))
-        )
+        #wrapper.append(
+        #    "\\def\\doctitle{{{n}}}".format(n=_latex_convert(doc_attributes["title"]))
+        #)
         wrapper.append(
             "\\def\\docref{{{n}}}".format(n=_latex_convert(doc_attributes["ref"]))
         )
