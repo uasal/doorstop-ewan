@@ -868,23 +868,28 @@ class LaTeXPublisher(BasePublisher):
 
         graphics_present = False
         # To include graphics listed in yaml file after the beginning of the document but before the matrix.
-        for graphics, label in template_data["include_graphics"].items():
-            graphics_present = True
-            if label:
-                adjusted_label = str(label).replace("['", "").replace("']", "")
-                label_line = "\\section{" + adjusted_label + "}"
-            else:
-                label_line = "section{Image_1}"
-            wrapper.append(label_line)
-            wrapper.append("\\begin{figure}[ht!]")
-            wrapper.append("\\begin{center}")
-            wrapper.append("\\includegraphics[angle=90, height=20cm, width=\\textwidth]{" + graphics + "}")
-            wrapper.append("\\end{center}")
-            wrapper.append("\\end{figure}")
-            wrapper.append("\\newpage")
-        wrapper = _add_comment(
-            wrapper, "END data from the template configuration file."
-        )
+        if graphics in template_data["include_graphics"].items() == False:
+            wrapper = _add_comment(
+                wrapper, "No graphics information in template to be added to published document. Skipping..."
+            )
+        else:
+            for graphics, label in template_data["include_graphics"].items():
+                graphics_present = True
+                if label:
+                    adjusted_label = str(label).replace("['", "").replace("']", "")
+                    label_line = "\\section{" + adjusted_label + "}"
+                else:
+                    label_line = "section{Image_1}"
+                wrapper.append(label_line)
+                wrapper.append("\\begin{figure}[ht!]")
+                wrapper.append("\\begin{center}")
+                wrapper.append("\\includegraphics[angle=90, height=20cm, width=\\textwidth]{" + graphics + "}")
+                wrapper.append("\\end{center}")
+                wrapper.append("\\end{figure}")
+                wrapper.append("\\newpage")
+            wrapper = _add_comment(
+                wrapper, "END data from the template configuration file."
+            )
         wrapper.append("")
         if graphics_present:
             wrapper = _add_comment(
