@@ -870,11 +870,7 @@ class LaTeXPublisher(BasePublisher):
 
         graphics_present = False
         # To include graphics listed in yaml file after the beginning of the document but before the matrix.
-        if graphics in template_data["include_graphics"].items() == False:
-            wrapper = _add_comment(
-                wrapper, "No graphics information in template to be added to published document. Skipping..."
-            )
-        else:
+        if "include_graphics" in template_data:
             for graphics, label in template_data["include_graphics"].items():
                 graphics_present = True
                 if label:
@@ -892,7 +888,12 @@ class LaTeXPublisher(BasePublisher):
             wrapper = _add_comment(
                 wrapper, "END data from the template configuration file."
             )
+        else:
+            wrapper = _add_comment(
+                wrapper, "No graphics information in template to be added to published document. Skipping..."
+            )
         wrapper.append("")
+
         if graphics_present:
             wrapper = _add_comment(
                 wrapper, "No empty page needed before traceability matrix / graphics present."
