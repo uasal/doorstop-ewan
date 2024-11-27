@@ -906,7 +906,7 @@ class LaTeXPublisher(BasePublisher):
             wrapper.append("")
 
         # Include traceability matrix
-        if template_data["tracability_matrix"] == True:
+        if template_data["traceability_matrix"] == True:
             wrapper = _add_comment(wrapper, "Add traceability matrix.")
             wrapper.append("\\section{Traceability Matrix}")
             wrapper.append("\\input{traceability.tex}")
