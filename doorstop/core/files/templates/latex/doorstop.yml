@@ -35,7 +35,8 @@ usepackage:
 # Define custom lines before \begin{document}
 before_begin_document:
   # Define the title for the published document output
-  - \def\docname{Pearl Requirements}
+  - \def\doctitle{Pearl Requirements}
+  - \def\subtitle{Level 0-4 Requirements}
   # Define / update the repository link requirements are located for reference
   - \def\repourl{https://gitlab.sc.ascendingnode.tech/pearl-systems/pearl_requirements}
   - \def\githuburl{https://github.com/uasal/pearl_requirements}
@@ -60,6 +61,6 @@ after_begin_document:
   - \maketoc
 # For adding the traceability matrix at the end of the document
 traceability_matrix:
-  - True
+  - False
 
 

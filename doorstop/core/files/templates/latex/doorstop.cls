@@ -225,7 +225,7 @@
 \pagestyle{fancy}
 \fancyhf{}% Clear all settings
 \fancyhead[RE,RO]{\raisebox{0.5cm}{\textsf{\begin{tabular}{p{5cm}p{2.5cm}p{3.5cm}}
-\textbf{\large\docname} & {\footnotesize\textbf{Repository:}} &{\footnotesize\textbf{Workflow:}}\tabularnewline
+\textbf{\large\doctitle} & {\footnotesize\textbf{Repository:}} &{\footnotesize\textbf{Workflow:}}\tabularnewline
 \multirow{3}{5cm}[1ex]{\textit{\docdef}}&\textrm{\small\gitlabrepo} & \textrm{\small\gitBranch} \tabularnewline
 &{\footnotesize\textbf{Date:}} & {\footnotesize\textbf{Commit:}}\tabularnewline
 &\textrm{\small\today} & \textrm{\small\gitDescribe} \tabularnewline
@@ -294,7 +294,8 @@
 		\includegraphics[height=3in]{\logo}\\[1mm]
 		\vspace{0.5cm} \mbox{}\hrulefill \mbox{}\\[1cm]
      		{\Huge \textbf{\doctitle\\[0.5cm]}}
-     		{\LARGE \textit{\docdef}}\\[0.5cm]
+			{\LARGE \textit{\subtitle}}\\[0.5cm]
+     		{\large \textit{\docdef}}\\[0.2cm]
             {\large \textbf{Date: }\today} \vfill
             {\large \textbf{\gitlabrepo} \textit{- Full Requirements Generation Repository}}\\[0.2cm]
             {\large \textbf{\githubrepo} \textit{- Levels 0-3 Requirements Repository}}\\[0.2cm]
