@@ -58,5 +58,8 @@ include_graphics:
 after_begin_document:
   - \maketitle
   - \maketoc
+# For adding the traceability matrix at the end of the document
+traceability_matrix:
+  - True
 
 
