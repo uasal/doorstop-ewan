@@ -299,8 +299,8 @@ class Application(ttk.Frame):
                 value = thewidget.get("1.0", tk.END)
                 self.stringvar_extendedvalue.set(value)
 
-            # Item header
-            widget.Label(frame, text="Header:").grid(
+            # Item header -> Changed to Short Name
+            widget.Label(frame, text="Short Name:").grid(
                 row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
             self.text_header = widget.Entry(frame, textvariable=self.stringvar_header)
@@ -539,7 +539,7 @@ class Application(ttk.Frame):
             )
 
             # Display the item's properties
-            self.stringvar_header.set("" if self.item is None else self.item.header)
+            self.stringvar_header.set("" if self.item is None else self.item.short_name)
             self.stringvar_text.set("" if self.item is None else self.item.text)
             self.intvar_active.set(False if self.item is None else self.item.active)
             self.intvar_derived.set(False if self.item is None else self.item.derived)
