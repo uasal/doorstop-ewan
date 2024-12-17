@@ -116,6 +116,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_STATUS = Text()
     DEFAULT_ARTIFACT = Text()
     DEFAULT_TESTING_NOTES = Text()
+    DEFAULT_VERIFICATION_PLAN = Text()
+    DEFAULT_OWNERS = Text()
+    DEFAULT_RATIONALE = Text()
+    DEFAULT_TAGS = Text()
 
     def __init__(self, document, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
@@ -160,6 +164,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["status"] = Item.DEFAULT_STATUS # type: ignore
         self._data["artifact"] = Item.DEFAULT_ARTIFACT # type: ignore
         self._data["testing notes"] = Item.DEFAULT_TESTING_NOTES # type:ignore
+        self._data["verification plan"] = Item.DEFAULT_VERIFICATION_PLAN # type:ignore
+        self._data["rationale"] = Item.DEFAULT_RATIONALE # type:ignore
+        self._data["owner(s)"] = Item.DEFAULT_OWNERS # type:ignore
+        self._data["tags"] = Item.DEFAULT_TAGS # type:ignore
         self._data["references"] = None  # type: ignore
         self._data["links"] = set()  # type: ignore
         if settings.ENABLE_HEADERS:
@@ -278,6 +286,14 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == "test method(s)":
                 value = Text(value)
             elif key == "testing notes":
+                value = Text(value)
+            elif key == "tags":
+                value = Text(value)
+            elif key == "rationale":
+                value = Text(value)
+            elif key == "verification plan":
+                value = Text(value)
+            elif key == "owner(s)":
                 value = Text(value)
             elif key == "ref":
                 value = value.strip()
@@ -408,6 +424,14 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = value.yaml  # type: ignore
             elif key == "artifact":
                 value = value.yaml  # type: ignore
+            elif key == "rationale":
+                value = value.yaml  # type: ignore
+            elif key == "tags":
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
+            elif key == "verification plan":
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
+            elif key == "owner(s)":
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
             elif key == "test method(s)":
                 value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
             elif key == "testing notes":
@@ -556,13 +580,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @property  # type: ignore
     @auto_load
     def short_name(self):
-        """Get the item's text."""
+        """Get the item's short name."""
         return self._data["short name"]
 
     @short_name.setter  # type: ignore
     @auto_save
     def short_name(self, value):
-        """Set the item's text."""
+        """Set the item's short name."""
         self._data["short name"] = Text(value)
 
     @property  # type: ignore
@@ -579,74 +603,122 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     @property  # type: ignore
     @auto_load
+    def verification_plan(self):
+        """Get the item's verification plan"""
+        return self._data["verification plan"]
+
+    @verification_plan.setter  # type: ignore
+    @auto_save
+    def verification_plan(self, value):
+        """Set the item's verification plan."""
+        self._data["verification plan"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def rationale(self):
+        """Get the item's rationale."""
+        return self._data["rationale"]
+
+    @rationale.setter  # type: ignore
+    @auto_save
+    def rationale(self, value):
+        """Set the item's rationale text."""
+        self._data["rationale"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def tags(self):
+        """Get the item's tags."""
+        return self._data["tags"]
+
+    @tags.setter  # type: ignore
+    @auto_save
+    def tags(self, value):
+        """Set the item's tags."""
+        self._data["tags"] = Text(value)
+    
+    @property  # type: ignore
+    @auto_load
+    def owners(self):
+        """Get the item's owners."""
+        return self._data["owner(s)"]
+
+    @owners.setter  # type: ignore
+    @auto_save
+    def owners(self, value):
+        """Set the item's owners."""
+        self._data["owner(s)"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
     def notes(self):
-        """Get the item's text."""
+        """Get the item's notes."""
         return self._data["notes"]
 
     @notes.setter  # type: ignore
     @auto_save
     def notes(self, value):
-        """Set the item's text."""
+        """Set the item's notes."""
         self._data["notes"] = Text(value)
 
     @property  # type: ignore
     @auto_load
     def test_methods(self):
-        """Get the item's text."""
+        """Get the item's test methods."""
         return self._data["test method(s)"]
 
     @test_methods.setter  # type: ignore
     @auto_save
     def test_methods(self, value):
-        """Set the item's text."""
+        """Set the item's test methods."""
         self._data["test method(s)"] = Text(value)
 
     @property  # type: ignore
     @auto_load
     def tier(self):
-        """Get the item's text."""
+        """Get the item's test tier."""
         return self._data["tier"]
 
     @tier.setter  # type: ignore
     @auto_save
     def tier(self, value):
-        """Set the item's text."""
+        """Set the item's test tier."""
         self._data["tier"] = Text(value)
 
     @property  # type: ignore
     @auto_load
     def status(self):
-        """Get the item's text."""
+        """Get the item's status."""
         return self._data["status"]
 
     @status.setter  # type: ignore
     @auto_save
     def status(self, value):
-        """Set the item's text."""
+        """Set the item's status."""
         self._data["status"] = Text(value)
 
     @property  # type: ignore
     @auto_load
     def artifact(self):
-        """Get the item's text."""
+        """Get the item's artifact."""
         return self._data["artifact"]
 
     @artifact.setter  # type: ignore
     @auto_save
     def artifact(self, value):
-        """Set the item's text."""
+        """Set the item's artifacts."""
         self._data["artifact"] = Text(value)
 
     @property  # type: ignore
     @auto_load
     def testing_notes(self):
-        """Get the item's text."""
+        """Get the item's testing notes."""
         return self._data["testing notes"]
 
     @testing_notes.setter  # type: ignore
     @auto_save
     def testing_notes(self, value):
-        """Set the item's text."""
+        """Set the item's testing notes."""
         self._data["testing notes"] = Text(value)
 
     @property  # type: ignore
