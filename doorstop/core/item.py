@@ -120,6 +120,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_OWNERS = Text()
     DEFAULT_RATIONALE = Text()
     DEFAULT_TAGS = Text()
+    DEFAULT_MISSION_SUCCESS = Text()
 
     def __init__(self, document, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
@@ -165,6 +166,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["artifact"] = Item.DEFAULT_ARTIFACT # type: ignore
         self._data["testing notes"] = Item.DEFAULT_TESTING_NOTES # type:ignore
         self._data["verification plan"] = Item.DEFAULT_VERIFICATION_PLAN # type:ignore
+        self._data["mission success criteria"] = Item.DEFAULT_MISSION_SUCCESS # type:ignore
         self._data["rationale"] = Item.DEFAULT_RATIONALE # type:ignore
         self._data["owner(s)"] = Item.DEFAULT_OWNERS # type:ignore
         self._data["tags"] = Item.DEFAULT_TAGS # type:ignore
@@ -294,6 +296,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == "verification plan":
                 value = Text(value)
             elif key == "owner(s)":
+                value = Text(value)
+            elif key == "mission success criteria":
                 value = Text(value)
             elif key == "ref":
                 value = value.strip()
@@ -435,6 +439,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == "test method(s)":
                 value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
             elif key == "testing notes":
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
+            elif key == "mission success criteria":
                 value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
@@ -588,6 +594,18 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def short_name(self, value):
         """Set the item's short name."""
         self._data["short name"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def mission_success(self):
+        """Get the item's mission success criteria."""
+        return self._data["mission success criteria"]
+
+    @mission_success.setter  # type: ignore
+    @auto_save
+    def mission_success(self, value):
+        """Set the item's mission success criteria."""
+        self._data["mission success criteria"] = Text(value)
 
     @property  # type: ignore
     @auto_load
