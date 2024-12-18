@@ -72,6 +72,8 @@ class Application(ttk.Frame):
 
         self.stringvar_text = tk.StringVar()
         self.stringvar_text.trace("w", self.update_item)
+        self.stringvar_owners = tk.StringVar()
+        self.stringvar_owners.trace("w", self.update_item)
         self.intvar_active = tk.IntVar()
         self.intvar_active.trace("w", self.update_item)
         self.intvar_derived = tk.IntVar()
@@ -92,6 +94,7 @@ class Application(ttk.Frame):
         self.combobox_documents = None
         self.text_items = None
         self.text_item = None
+        self.text_owners = None
         self.listbox_links = None
         self.combobox_extended = None
         self.text_extendedvalue = None
@@ -210,7 +213,7 @@ class Application(ttk.Frame):
             widget.Label(frame, text="Items:").grid(
                 row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp
             )
-            c_columnId = ("Id",)
+            c_columnId = ("UID",)
             self.treeview_outline = widget.TreeView(frame, columns=c_columnId)
             for col in c_columnId:
                 self.treeview_outline.heading(col, text=col)
@@ -248,7 +251,7 @@ class Application(ttk.Frame):
             widget.Button(frame, text=">", width=0, command=self.right).grid(
                 row=2, column=3, sticky=tk.EW, padx=(0, 2)
             )
-            widget.Button(frame, text="Add Item", command=self.add).grid(
+            widget.Button(frame, text="Save Edits", command=self.save).grid(
                 row=2, column=4, sticky=tk.W, **kw_gp
             )
             widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(
@@ -306,8 +309,8 @@ class Application(ttk.Frame):
             self.text_header = widget.Entry(frame, textvariable=self.stringvar_header)
             self.text_header.grid(row=1, column=0, columnspan=3, **kw_gsp)
 
-            # Selected Item
-            widget.Label(frame, text="Selected Item:").grid(
+            # Text
+            widget.Label(frame, text="Text:").grid(
                 row=2, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
             self.text_item = widget.Text(
@@ -316,11 +319,20 @@ class Application(ttk.Frame):
             self.text_item.bind("<FocusIn>", text_focusin)
             self.text_item.bind("<FocusOut>", text_item_focusout)
             self.text_item.grid(row=3, column=0, columnspan=3, **kw_gsp)
+            
+            # Column: Owners
+            widget.Label(frame, text="Owners:").grid(
+                row=4, column=0, columnspan=3, sticky=tk.W, **kw_gp
+            )
+            self.text_owners = widget.Entry(
+                frame, textvariable=self.stringvar_owners
+            )
+            self.text_owners.grid(row=5, column=0, columnspan=3, **kw_gsp)
 
             # Column: Properties
-            self.create_properties_widget(frame).grid(
-                row=4, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
-            )
+            #self.create_properties_widget(frame).grid(
+            #    row=4, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
+            #)
 
             # Column: Links
             self.create_links_widget(frame).grid(
@@ -477,7 +489,7 @@ class Application(ttk.Frame):
 
             # Add the item to the document text
             widget.noUserInput_insert(
-                self.text_items, tk.END, "{t}".format(t=item.text or item.ref or "???")
+                self.text_items, tk.END, "Short Name: {h}\n{t}\nOwners: {o}\nRationale: {r}\nMission Success Criteria: {m}\nVerification Plan: {v}\nNotes: {n}\nReviewed: {w}\n".format(h=item.short_name,t=item.text,o=item.owners,r=item.rationale,m=item.mission_success,v=item.verification_plan,n=item.notes,w=item.reviewed or item.ref or "N/A")
             )
             widget.noUserInput_insert(self.text_items, tk.END, " [")
             widget.noUserInput_insert(
@@ -535,11 +547,12 @@ class Application(ttk.Frame):
 
             # Display the item's text
             self.text_item.replace(
-                "1.0", tk.END, "" if self.item is None else self.item.text
+        "1.0", tk.END, "" if self.item is None else self.item.text
             )
 
             # Display the item's properties
             self.stringvar_header.set("" if self.item is None else self.item.short_name)
+            self.stringvar_owners.set("" if self.item is None else self.item.owners)
             self.stringvar_text.set("" if self.item is None else self.item.text)
             self.intvar_active.set(False if self.item is None else self.item.active)
             self.intvar_derived.set(False if self.item is None else self.item.derived)
@@ -704,6 +717,18 @@ class Application(ttk.Frame):
         self.display_document()
         # Set the new selection
         self.stringvar_item.set(item.uid)
+
+   # EDITING SECTION -----
+    @_log
+    def save(self):
+        """Edit an item to the document."""
+        logging.info("editing item: {}...".format(self.document))
+        item = self.document.save()
+        logging.info("saved edited item: {}".format(item))
+        # Refresh the document view
+        # self.display_document()
+        # Set the new selection
+        # self.stringvar_item.set(item.uid)
 
     @_log
     def remove(self):
