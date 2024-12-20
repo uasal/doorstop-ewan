@@ -53,6 +53,9 @@ PUBLISH_HEADING_LEVELS = False  # include levels on header items
 ENABLE_HEADERS = True  # use headers if defined
 WRITE_LINESEPERATOR = os.linesep
 
+# Document settings
+DOC_REPO = '<a href="https://gitlab.sc.ascendingnode.tech:8443/pearl-systems/pearl_requirements">GitLab</a>
+
 # Version control settings
 ADDREMOVE_FILES = True  # automatically add/remove new/changed files
 
@@ -64,3 +67,4 @@ CACHE_PATHS = True  # cache file/directory paths and contents
 # Server settings
 SERVER_HOST = None  # '' = server not specified, None = no server in use
 SERVER_PORT = 7867
+
