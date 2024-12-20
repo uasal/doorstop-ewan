@@ -46,6 +46,7 @@ REVIEW_NEW_ITEMS = True  # automatically review new items during validation
 STAMP_NEW_LINKS = True  # automatically stamp links upon creation
 
 # Publishing settings
+PUBLISH_PARENT_LINKS = True # include parent links when publishing
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = False  # include levels on non-header items
 PUBLISH_HEADING_LEVELS = False  # include levels on header items
