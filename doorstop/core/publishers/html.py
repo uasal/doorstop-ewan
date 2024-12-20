@@ -103,7 +103,7 @@ class HtmlPublisher(MarkdownPublisher):
                 "\n".join(lines),
                 doc_attributes={
                     "name": "Index",
-                    "ref": "https://github.com/uasal/pearl_requirements",
+                    "repo": settings.DOC_REPO,
                     "title": "Requirements Index",
                     "by": "-",
                     "major": "-",
@@ -177,7 +177,7 @@ class HtmlPublisher(MarkdownPublisher):
             "\n".join(lines),
             doc_attributes={
                 "name": "Traceability",
-                "ref": "-",
+                "repo": settings.DOC_REPO,
                 "title": "Requirements Traceability Matrix",
                 "by": "-",
                 "major": "-",
@@ -193,6 +193,7 @@ class HtmlPublisher(MarkdownPublisher):
         doc_attributes,
         toc=None,
         parent=None,
+        child=None,
         document=None,
         is_doc=False,
         has_index=False,
@@ -207,6 +208,7 @@ class HtmlPublisher(MarkdownPublisher):
             body=body,
             toc=toc,
             parent=parent,
+            child=child,
             document=document,
             doc_attributes=doc_attributes,
             is_doc=is_doc,
@@ -261,8 +263,8 @@ class HtmlPublisher(MarkdownPublisher):
                     u=item.uid, h=item.header, p=item.document.prefix, r=tmpRef
                 )
             else:
-                link = '<a href="{r}{p}.html#{u}">{u}</a>'.format(
-                    u=item.uid, p=item.document.prefix, r=tmpRef
+                link = '<a href="{r}{p}.html#{u}-{s}">{u}</a>'.format(
+                    u=item.uid, p=item.document.prefix, s=item.short_name, r=tmpRef
                 )
             return link
         else:
@@ -337,6 +339,7 @@ class HtmlPublisher(MarkdownPublisher):
                 doc_attributes,
                 toc=toc_html,
                 parent=obj.parent,
+                child = obj.children,
                 document=obj,
                 is_doc=True,
                 has_index=self.getIndex(),
@@ -360,14 +363,14 @@ class HtmlPublisher(MarkdownPublisher):
             elif item.header:
                 heading = "{h}".format(h=item.header)
             else:
-                heading = item.uid
+                heading = "{u}-{s}".format(u=item.uid,s=item.short_name)
             if settings.PUBLISH_HEADING_LEVELS:
                 level = format_level(item.level)
                 lbl = "{lev} {h}".format(lev=level, h=heading)
             else:
                 lbl = heading
             if linkify:
-                uid = item.uid
+                uid = "{u}-{s}".format(u=item.uid,s=item.short_name)
             else:
                 uid = ""
             toc.append({"depth": item.depth, "text": lbl, "uid": uid})
