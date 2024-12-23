@@ -273,7 +273,6 @@ class MarkdownPublisher(BasePublisher):
             uid = str(item.uid)
             split_uid = uid.split("-")
             label_links = ""
-            items2 = item.find_child_items()
 
             # 'Level' Header for each document w/separator
             if item_count == 0:
@@ -326,17 +325,18 @@ class MarkdownPublisher(BasePublisher):
                 yield ""  # break before reference
                 yield self.format_references(item)
 
-            # Parent links
-            if settings.PUBLISH_PARENT_LINKS:
-                if item.links:
-                    items1 = item.parent_items
+            # Parent Links
+            if item.links:
+                items1 = item.parent_items
+                if items1 and settings.PUBLISH_PARENT_LINKS:
                     label = "Parent Links:"
                     links = self.format_links(items1, linkify)
                     label_links = self.format_label_links(label, links, linkify)
                     yield label_links + "\n"
-
-            # Child links
+                    
+            # Child Links
             if settings.PUBLISH_CHILD_LINKS:
+                items2 = item.find_child_items()
                 if items2:
                     label = "Child Links:"
                     links = self.format_links(items2, linkify)
