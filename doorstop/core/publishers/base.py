@@ -9,7 +9,7 @@ from typing import Any, Dict
 
 from markdown import markdown
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.template import get_template
 from doorstop.core.types import is_tree
@@ -315,9 +315,9 @@ def format_level(level):
 def get_document_attributes(obj, is_html=False, extensions=None):
     """Try to get attributes from document."""
     doc_attributes = {}
-    doc_attributes["name"] = "doc-" + obj.prefix
-    doc_attributes["title"] = "Pearl Requirements"
-    doc_attributes["ref"] = "GitLab"
+    doc_attributes["name"] = "Doc-" + obj.prefix
+    doc_attributes["title"] = settings.PROJECT
+    doc_attributes["ref"] = settings.DOC_REPO
     doc_attributes["by"] = "-"
     doc_attributes["major"] = "-"
     doc_attributes["minor"] = ""

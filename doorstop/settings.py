@@ -54,7 +54,8 @@ ENABLE_HEADERS = True  # use headers if defined
 WRITE_LINESEPERATOR = os.linesep
 
 # Document settings
-DOC_REPO = '<a href="https://gitlab.sc.ascendingnode.tech:8443/pearl-systems/pearl_requirements">GitLab</a>
+DOC_REPO = "https://gitlab.sc.ascendingnode.tech:8443/pearl-systems/pearl_requirements"
+PROJECT = 'Pearl Requirements'
 
 # Version control settings
 ADDREMOVE_FILES = True  # automatically add/remove new/changed files
