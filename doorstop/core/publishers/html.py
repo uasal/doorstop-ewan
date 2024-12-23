@@ -103,7 +103,7 @@ class HtmlPublisher(MarkdownPublisher):
                 "\n".join(lines),
                 doc_attributes={
                     "name": "Index",
-                    "repo": settings.DOC_REPO,
+                    "ref": settings.DOC_REPO,
                     "title": "Requirements Index",
                     "by": "-",
                     "major": "-",
@@ -177,7 +177,7 @@ class HtmlPublisher(MarkdownPublisher):
             "\n".join(lines),
             doc_attributes={
                 "name": "Traceability",
-                "repo": settings.DOC_REPO,
+                "ref": settings.DOC_REPO,
                 "title": "Requirements Traceability Matrix",
                 "by": "-",
                 "major": "-",
