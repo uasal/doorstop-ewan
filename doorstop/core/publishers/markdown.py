@@ -231,8 +231,11 @@ class MarkdownPublisher(BasePublisher):
         else:
             uid = item.uid
             if settings.ENABLE_HEADERS:
+                #<span class="anchor" id="L3-0024-Payload Metrology"></span><div id="L3-0024-Payload Metrology"></div>
                 if to_html:
-                    uid = "{u}-<small><i>{s}</i></small>".format(u=item.uid, s=item.short_name)
+                    header = "{u}-<small><i>{s}</i></small>".format(u=item.uid, s=item.short_name)
+                    span = "<span class='anchor' id='{u}-{s}'></span><div id='{u}-{s}'></div>".format(u=item.uid, s=item.short_name)
+                    uid = span + header
                 else:
                     uid = "{u}- _{s}_".format(u=item.uid, s=item.short_name)
             else:
