@@ -231,13 +231,15 @@ class MarkdownPublisher(BasePublisher):
         else:
             uid = item.uid
             if settings.ENABLE_HEADERS:
-                if item.header:
-                    if to_html:
-                        uid = "{h}- <small>{u}</small>".format(h=item.header, u=item.uid)
-                    else:
-                        uid = "{h}- _{u}_".format(h=item.header, u=item.uid)
+                #<span class="anchor" id="L3-0024-Payload Metrology"></span><div id="L3-0024-Payload Metrology"></div>
+                if to_html:
+                    header = "{u}-<small><i>{s}</i></small>".format(u=item.uid, s=item.short_name)
+                    span = "<span class='anchor' id='{u}-{s}'></span><div id='{u}-{s}'></div>".format(u=item.uid, s=item.short_name)
+                    uid = span + header
                 else:
-                    uid = "{u}".format(u=item.uid)
+                    uid = "{u}- _{s}_".format(u=item.uid, s=item.short_name)
+            else:
+                uid = "{u}".format(u=item.uid)
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
@@ -273,6 +275,7 @@ class MarkdownPublisher(BasePublisher):
             prefix = item.document.prefix
             uid = str(item.uid)
             split_uid = uid.split("-")
+            label_links = ""
 
             # 'Level' Header for each document w/separator
             if item_count == 0:
@@ -301,28 +304,21 @@ class MarkdownPublisher(BasePublisher):
             complete_heading = self._generate_heading_from_item(item, to_html=to_html)
             yield complete_heading
 
-            # Short Name
-            if item.short_name:
-                yield "" # break before short name
-                shortname = str(item.short_name.splitlines())
-                yield "_" + shortname.replace("['", "").replace("']", "") + "_"
-
             # Text
             if item.text:
                 yield ""  # break before text
                 yield from item.text.splitlines()
+                yield ""
 
             # Attributes Publish
-            if item.document and item.document.publish:
+            if item.document.publish:
                 for attr in item.document.publish:
-                    if not item.attribute(attr):
+                    if not item.attribute(attr) or item.attribute(attr) == "":
                         continue
                     else:
-                        yield ""  # break before attributes
-                        yield attr.capitalize() + ": " + item.attribute(attr)
-                yield ""  # break between attributes
+                        yield "**" + attr.capitalize() + ":** " + item.attribute(attr) + "\n"
 
-            # Reference
+            # Ref (old version)
             if item.ref:
                 yield ""  # break before reference
                 yield self.format_ref(item)
@@ -332,22 +328,23 @@ class MarkdownPublisher(BasePublisher):
                 yield ""  # break before reference
                 yield self.format_references(item)
 
-            # Parent & Child links
+            # Parent Links
             if item.links:
-                items2 = item.parent_items
-                items3 = item.find_child_items()
-                if settings.PUBLISH_CHILD_LINKS:
-                    if items2:
-                        label = "Parent links:"
-                        links = self.format_links(items2, linkify)
-                    elif items3:
-                        label = "Child links:"
-                        links = self.format_links(items2, linkify)
-                    else:
-                        label = "Links:"
-                        links = self.format_links(items2, linkify)
-                label_links = self.format_label_links(label, links, linkify)
-                yield label_links
+                items1 = item.parent_items
+                if items1 and settings.PUBLISH_PARENT_LINKS:
+                    label = "Parent Links:"
+                    links = self.format_links(items1, linkify)
+                    label_links = self.format_label_links(label, links, linkify)
+                    yield label_links + "\n"
+                    
+            # Child Links
+            if settings.PUBLISH_CHILD_LINKS:
+                items2 = item.find_child_items()
+                if items2:
+                    label = "Child Links:"
+                    links = self.format_links(items2, linkify)
+                    label_links = self.format_label_links(label, links, linkify)
+                    yield label_links + "\n"
 
             # Add custom publish attributes (Table format)
             # if item.document and item.document.publish:
@@ -363,8 +360,8 @@ class MarkdownPublisher(BasePublisher):
             #         yield "| {} | {} |".format(attr, item.attribute(attr))
             #     yield ""
 
-            item_count = item_count + 1
-            yield "\n"  # break between items
+            item_count = item_count + 1  # item counter
+            yield "--------------------------------\n" # break between items
 
 
 def clean_link(uid):

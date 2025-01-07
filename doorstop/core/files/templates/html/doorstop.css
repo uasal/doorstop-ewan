@@ -5,3 +5,10 @@
     }
 
 #img {width: 100%}
+
+.anchor{
+    display:block;
+    height:163px; /* this is the height of your header */
+    margin-top:-163px; /* this is again negative value of the height of your header */
+    visibility:hidden;  
+}

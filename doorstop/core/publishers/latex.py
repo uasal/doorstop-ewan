@@ -212,22 +212,24 @@ class LaTeXPublisher(BasePublisher):
                     #yield ""  # break before reference
                     yield self.format_references(item)
 
-                # Parent and Child links
-                if settings.PUBLISH_CHILD_LINKS:
-                    items2 = item.find_child_items()
-                    label_links = ""
-                    if item.links or items2:
-                        if item.links:
-                            items1 = item.parent_items
-                            label = "Parent links:"
-                            links = self.format_links(items1, linkify)
-                            label_links = self.format_label_links(label, links, linkify)
-                        if items2:
-                            label = "Child links:"
-                            links = self.format_links(items2, linkify)
-                            label_links = self.format_label_links(label, links, linkify)
-                        yield label_links
-
+            # Parent Links
+            if item.links:
+                items1 = item.parent_items
+                if items1 and settings.PUBLISH_PARENT_LINKS:
+                    label = "Parent Links:"
+                    links = self.format_links(items1, linkify)
+                    label_links = self.format_label_links(label, links, linkify)
+                    yield label_links + "\n"
+                    
+            # Child Links
+            if settings.PUBLISH_CHILD_LINKS:
+                items2 = item.find_child_items()
+                if items2:
+                    label = "Child Links:"
+                    links = self.format_links(items2, linkify)
+                    label_links = self.format_label_links(label, links, linkify)
+                    yield label_links + "\n"
+                    
                 # Original version
                 # if item.document and item.document.publish:
                 #     header_printed = False

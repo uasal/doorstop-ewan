@@ -60,16 +60,14 @@
           </div>
         </div>
         <div class="col-2">
-          <div class="bd-lead text-nowrap">
-            <span class="text-muted">Ref</span>
-            <p><span class="text-monospace">{{doc_attributes["ref"]}}</span></p>
+          <div class="bd-text-nowrap text-center">
+            <span class="text-muted"><strong>Repo</strong></span>
+            <p><span class="text-monospace"><a href={{doc_attributes["ref"]}}>GitLab</a></span></p>
           </div>
         </div>
         <div class="col-2">
           <div class="bd-lead text-nowrap">
-            <span class="text-muted">By</span>
-            <p><span class="text-monospace">{{doc_attributes["by"]}}</span></p>
-            <span class="text-muted">Issue</span>
+            <span class="text-muted"><strong>Commit</strong></span>
             <p><span class="text-monospace">{{doc_attributes["major"]}}{{doc_attributes["minor"]}}</span></p>
           </div>
         </div>
