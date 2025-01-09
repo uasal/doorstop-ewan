@@ -1,5 +1,5 @@
 %setdefault('stylesheet', None)
-%setdefault('navigation', False)
+%setdefault('navigation', True)
 <!DOCTYPE html>
 <html>
 <head><title>{{!doc_attributes["name"]}}</title>
@@ -21,7 +21,7 @@
   </script>
 </head>
 <body>
-{{! '<P>Navigation: <a href="{0}">Home</a> &bull; <a href="{0}documents/">Documents</a>'.format(baseurl) if navigation else ''}}
+{{! '<P><strong>Navigation: </strong><a href="{0}">Home</a> &bull; <a href="{0}documents/">Documents</a>'.format(baseurl) if navigation else ''}}
   {{!base}}
 </body>
 </html>

@@ -46,11 +46,16 @@ REVIEW_NEW_ITEMS = True  # automatically review new items during validation
 STAMP_NEW_LINKS = True  # automatically stamp links upon creation
 
 # Publishing settings
+PUBLISH_PARENT_LINKS = True # include parent links when publishing
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = False  # include levels on non-header items
 PUBLISH_HEADING_LEVELS = False  # include levels on header items
 ENABLE_HEADERS = True  # use headers if defined
 WRITE_LINESEPERATOR = os.linesep
+
+# Document settings
+DOC_REPO = "https://gitlab.sc.ascendingnode.tech:8443/pearl-systems/pearl_requirements"
+PROJECT = 'Pearl Requirements'
 
 # Version control settings
 ADDREMOVE_FILES = True  # automatically add/remove new/changed files
@@ -63,3 +68,4 @@ CACHE_PATHS = True  # cache file/directory paths and contents
 # Server settings
 SERVER_HOST = None  # '' = server not specified, None = no server in use
 SERVER_PORT = 7867
+
