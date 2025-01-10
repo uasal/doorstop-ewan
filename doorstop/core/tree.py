@@ -245,7 +245,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         return document
 
     # decorators are applied to methods in the associated classes
-    def add_item(self, value, number=None, level=None, reorder=True):
+    def add_item(self, value, number=None, level=None, reorder=False):
         """Add a new item to an existing document by prefix.
 
         :param value: document or prefix
