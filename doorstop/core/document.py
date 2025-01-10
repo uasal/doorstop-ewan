@@ -38,7 +38,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     TEMPLATE = "template"
 
     DEFAULT_PREFIX = Prefix("REQ")
-    DEFAULT_SEP = ""
+    DEFAULT_SEP = "-"
     DEFAULT_DIGITS = 4
     DEFAULT_ATTRIBUTES_PUBLISH = ['owner(s)', 'rationale', 'verification plan', 'mission success criteria']
 
