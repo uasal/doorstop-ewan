@@ -256,7 +256,7 @@ def _itemize(header, data, document, mapping=None):
 
             # Convert values for particular keys
             if key in ("uid", "id"):  # 'id' for backwards compatibility
-                if value is True:
+                if value is not False:
                     uid = value
                     prev_uid.append(uid)
                 # Checks for duplicate UID's that were already entered from the same csv file.
