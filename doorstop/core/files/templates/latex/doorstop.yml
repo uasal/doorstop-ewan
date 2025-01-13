@@ -62,5 +62,8 @@ after_begin_document:
 # For adding the traceability matrix at the end of the document
 traceability_matrix:
   - False
+# For adding the RVM at the end of the document. Name / location of rvm.tex needs to be in the same output directory of published latex files from doorstop.
+rvm:
+  - True
 
 
