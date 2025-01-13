@@ -914,6 +914,16 @@ class LaTeXPublisher(BasePublisher):
             wrapper.append("\\input{traceability.tex}")
             wrapper = _add_comment(wrapper, "END traceability matrix.")
             wrapper.append("")
+            wrapper.append("\\newpage")
+            wrapper.append("")
+
+        # Include rvm if setting is true
+        if template_data["rvm"] == True:
+            wrapper = _add_comment(wrapper, "Add rvm matrix.")
+            wrapper.append("\\section{Requirements Verification Matrix}")
+            wrapper.append("\\input{rvm.tex}")
+            wrapper = _add_comment(wrapper, "END rvm.")
+            wrapper.append("")
 
         # End the document command to be added
         wrapper.append("\\end{document}")
