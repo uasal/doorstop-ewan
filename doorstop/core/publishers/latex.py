@@ -908,7 +908,7 @@ class LaTeXPublisher(BasePublisher):
             wrapper.append("")
 
         # Include traceability matrix
-        if template_data["traceability_matrix"] == True:
+        if "traceability_matrix" in template_data:
             wrapper = _add_comment(wrapper, "Add traceability matrix.")
             wrapper.append("\\section{Traceability Matrix}")
             wrapper.append("\\input{traceability.tex}")
@@ -916,13 +916,19 @@ class LaTeXPublisher(BasePublisher):
             wrapper.append("")
             wrapper.append("\\newpage")
             wrapper.append("")
+        else:
+            wrapper = _add_comment(wrapper, "Traceability matrix import setting turned off in doorstop.yml. Skipping...")
+            wrapper.append("")
 
         # Include rvm if setting is true
-        if template_data["rvm"] == True:
+        if "rvm" in template_data:
             wrapper = _add_comment(wrapper, "Add rvm matrix.")
             wrapper.append("\\section{Requirements Verification Matrix}")
             wrapper.append("\\input{rvm.tex}")
             wrapper = _add_comment(wrapper, "END rvm.")
+            wrapper.append("")
+        else:
+            wrapper = _add_comment(wrapper, "RVM import setting turned off in doorstop.yml. Skipping...")
             wrapper.append("")
 
         # End the document command to be added
