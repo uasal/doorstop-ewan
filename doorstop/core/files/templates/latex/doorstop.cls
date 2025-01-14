@@ -86,6 +86,7 @@
 \RequirePackage{zref-user}
 \RequirePackage{zref-xr}
 \RequirePackage{parskip}
+\RequirePackage{lscape}
 
 \edef\masterBranch{\detokenize{master}}
 \edef\gitBranch{\gitBranch}

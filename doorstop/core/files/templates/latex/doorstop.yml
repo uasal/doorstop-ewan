@@ -12,6 +12,7 @@ usepackage:
   url:
   titletoc:
   ragged2e:
+  lscape:
   tabularx:
   longtable:
   datetime:
