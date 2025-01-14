@@ -923,8 +923,11 @@ class LaTeXPublisher(BasePublisher):
         # Include rvm if setting is true
         if "rvm" in template_data:
             wrapper = _add_comment(wrapper, "Add rvm matrix.")
+            wrapper.append("\\newpage")
+            wrapper.append("\\begin{landscape}")
             wrapper.append("\\section{Requirements Verification Matrix}")
             wrapper.append("\\input{rvm.tex}")
+            wrapper.append("\\end{landscape}")
             wrapper = _add_comment(wrapper, "END rvm.")
             wrapper.append("")
         else:
