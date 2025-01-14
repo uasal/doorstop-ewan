@@ -67,6 +67,7 @@
 \RequirePackage{fancyhdr}
 \RequirePackage{multirow}
 \RequirePackage{lastpage}
+\RequirePackage{booktabs}
 \RequirePackage{color}
 \RequirePackage{listings}
 \RequirePackage{tikz}
