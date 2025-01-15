@@ -87,6 +87,8 @@
 \RequirePackage{zref-xr}
 \RequirePackage{parskip}
 \RequirePackage{lscape}
+\RequirePackage{adjustbox}
+\RequirePackage{rotating}
 
 \edef\masterBranch{\detokenize{master}}
 \edef\gitBranch{\gitBranch}

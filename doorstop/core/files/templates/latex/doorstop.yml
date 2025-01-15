@@ -5,6 +5,8 @@ documentclass:
 # Define all 'usepackage' commands.
 usepackage:
   booktabs:
+  adjustbox:
+  rotating:
   inputenc:
     - utf8
   amsmath:
