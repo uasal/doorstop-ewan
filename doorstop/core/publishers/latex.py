@@ -924,10 +924,10 @@ class LaTeXPublisher(BasePublisher):
         if "rvm" in template_data:
             wrapper = _add_comment(wrapper, "Add rvm matrix.")
             wrapper.append("\\newpage")
-            wrapper.append("\\begin{adjustbox}{angle=90}")
             wrapper.append("\\section{Requirements Verification Matrix}")
+            wrapper.append("\\begin{sidewaystable}")
             wrapper.append("\\input{rvm.tex}")
-            wrapper.append("\\end{adjustbox}")
+            wrapper.append("\\end{sidewaystable}")
             wrapper = _add_comment(wrapper, "END rvm.")
             wrapper.append("")
         else:
