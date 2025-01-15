@@ -27,6 +27,7 @@ usepackage:
   xr-hyper:
   microtype:
   gitinfo2:
+  markdown:
   parskip:
   silence:
   csvsimple:
@@ -52,6 +53,7 @@ before_begin_document:
   - \def\contributors{Roger Angel, Laird Close, Victor Gasho, Lori Harrison, Jared Males, Buddy Martin, Manny Montoya, et al.}
   # Define copyright claimer (document side watermark)
   - \def\claimer{\color{black!40}Nothing in this document is proprietary or confidential.}
+  - \markdownSetup{pipeTables = true}
 # For appending graphics only before the end of the document
 # Format -> image name: -> image title
 include_graphics:

@@ -925,9 +925,9 @@ class LaTeXPublisher(BasePublisher):
             wrapper = _add_comment(wrapper, "Add rvm matrix.")
             wrapper.append("\\newpage")
             wrapper.append("\\section{Requirements Verification Matrix}")
-            wrapper.append("\\begin{sidewaystable}")
-            wrapper.append("\\input{rvm.tex}")
-            wrapper.append("\\end{sidewaystable}")
+            wrapper.append("\\begin{markdown}")
+            wrapper.append("\\input{rvm.md}")
+            wrapper.append("\\end{markodwn}")
             wrapper = _add_comment(wrapper, "END rvm.")
             wrapper.append("")
         else:
