@@ -61,6 +61,7 @@ before_begin_document:
   # Define h and v badness levels for what is shown as warnings
   - \hbadness=99999
   - \vbadness=99999
+  - \sloppy
   # Define column type for rvm to use
   - \newcolumntype{L}{>{\centering\arraybackslash}m{3cm}}
 
