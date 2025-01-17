@@ -91,6 +91,7 @@
 \RequirePackage{array}
 \RequirePackage{rotating}
 \RequirePackage[OT1]{fontenc}
+\RequirePackage{inputenc}
 
 \edef\masterBranch{\detokenize{master}}
 \edef\gitBranch{\gitBranch}

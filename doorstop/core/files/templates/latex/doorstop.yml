@@ -12,6 +12,7 @@ usepackage:
   url:
   titletoc:
   listings:
+  inputenc:
   array:
   ragged2e:
   pdflscape:
