@@ -7,14 +7,14 @@ usepackage:
   booktabs:
   adjustbox:
   rotating:
-  inputenc:
-    - utf8
   amsmath:
   ulem:
   url:
   titletoc:
+  listings:
+  array:
   ragged2e:
-  lscape:
+  pdflscape:
   tabularx:
   longtable:
   datetime:
@@ -23,11 +23,11 @@ usepackage:
   fancyvrb:
   textalpha:
   fontenc:
+    - OT1
   unicode-math:
   xr-hyper:
   microtype:
   gitinfo2:
-  markdown:
   parskip:
   silence:
   csvsimple:
@@ -53,7 +53,16 @@ before_begin_document:
   - \def\contributors{Roger Angel, Laird Close, Victor Gasho, Lori Harrison, Jared Males, Buddy Martin, Manny Montoya, et al.}
   # Define copyright claimer (document side watermark)
   - \def\claimer{\color{black!40}Nothing in this document is proprietary or confidential.}
-  - \markdownSetup{pipeTables = true}
+  # For defining any warning filters to show warnings of interest only
+  - \WarningFilter*{latex}{Reference `LastPage' on page}
+  - \WarningFilter*{hyperref}{Difference (\the\@tempcnta) between bookmark levels is}
+  - \WarningFilter*{latex}{Hyper reference on page}
+  # Define h and v badness levels for what is shown as warnings
+  - \hbadness=99999
+  - \vbadness=99999
+  # Define column type for rvm to use
+  - \newcolumntype{L}{>{\centering\arraybackslash}m{3cm}}
+
 # For appending graphics only before the end of the document
 # Format -> image name: -> image title
 include_graphics:

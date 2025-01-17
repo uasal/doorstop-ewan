@@ -86,10 +86,11 @@
 \RequirePackage{zref-user}
 \RequirePackage{zref-xr}
 \RequirePackage{parskip}
-\RequirePackage{lscape}
+\RequirePackage{pdflscape}
 \RequirePackage{adjustbox}
+\RequirePackage{array}
 \RequirePackage{rotating}
-\RequirePackage{markdown}
+\RequirePackage[OT1]{fontenc}
 
 \edef\masterBranch{\detokenize{master}}
 \edef\gitBranch{\gitBranch}
