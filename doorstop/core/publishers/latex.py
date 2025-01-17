@@ -898,6 +898,7 @@ class LaTeXPublisher(BasePublisher):
             wrapper = _add_comment(
                 wrapper, "No empty page needed before traceability matrix / graphics present."
             )
+            wrapper.append("")
         else:
             wrapper = _add_comment(
                 wrapper, "Adding empty page before traceability matrix"
@@ -923,11 +924,15 @@ class LaTeXPublisher(BasePublisher):
         # Include rvm if setting is true
         if "rvm" in template_data:
             wrapper = _add_comment(wrapper, "Add rvm matrix.")
-            wrapper.append("\\newpage")
+            wrapper.append("\\begin{landscape}")
             wrapper.append("\\section{Requirements Verification Matrix}")
-            wrapper.append("\\begin{markdown}")
-            wrapper.append("\\input{rvm.md}")
-            wrapper.append("\\end{markodwn}")
+            wrapper.append("\\begin{longtable}{L|L|L|L|L|L}")
+            wrapper.append("\\caption{Requirement Verification Matrix for L4 Requirements.}")
+            wrapper.append("\\textbf{UID} & \textbf{Name} & \textbf{Verification Plan} & \textbf{Method} & \textbf{Phase} & \textbf{Status}")
+            wrapper.append("\\csvreader[head to column names]{rvm.csv}{}")
+            wrapper.append("{\\\\hline\csvcoli&\csvcolii&\csvcoliii&\csvcoliv&\csvcolv&\csvcolvi}")
+            wrapper.append("\\end{longtable}")
+            wrapper.append("\\end{landscape}")
             wrapper = _add_comment(wrapper, "END rvm.")
             wrapper.append("")
         else:
