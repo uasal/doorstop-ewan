@@ -63,6 +63,7 @@
 \LoadClass{article}
 \RequirePackage{titletoc}
 \RequirePackage{palatino}
+\RequirePackage{silence}
 \RequirePackage{graphicx}
 \RequirePackage{fancyhdr}
 \RequirePackage{multirow}
