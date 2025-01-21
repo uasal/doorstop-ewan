@@ -63,10 +63,12 @@
 \LoadClass{article}
 \RequirePackage{titletoc}
 \RequirePackage{palatino}
+\RequirePackage{silence}
 \RequirePackage{graphicx}
 \RequirePackage{fancyhdr}
 \RequirePackage{multirow}
 \RequirePackage{lastpage}
+\RequirePackage{booktabs}
 \RequirePackage{color}
 \RequirePackage{listings}
 \RequirePackage{tikz}
@@ -85,6 +87,12 @@
 \RequirePackage{zref-user}
 \RequirePackage{zref-xr}
 \RequirePackage{parskip}
+\RequirePackage{pdflscape}
+\RequirePackage{adjustbox}
+\RequirePackage{array}
+\RequirePackage{rotating}
+\RequirePackage[OT1]{fontenc}
+\RequirePackage{inputenc}
 
 \edef\masterBranch{\detokenize{master}}
 \edef\gitBranch{\gitBranch}

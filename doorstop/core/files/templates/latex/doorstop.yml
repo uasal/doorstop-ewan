@@ -4,13 +4,18 @@ documentclass:
   - twoside
 # Define all 'usepackage' commands.
 usepackage:
-  inputenc:
-    - utf8
+  booktabs:
+  adjustbox:
+  rotating:
   amsmath:
   ulem:
   url:
   titletoc:
+  listings:
+  inputenc:
+  array:
   ragged2e:
+  pdflscape:
   tabularx:
   longtable:
   datetime:
@@ -19,6 +24,7 @@ usepackage:
   fancyvrb:
   textalpha:
   fontenc:
+    - OT1
   unicode-math:
   xr-hyper:
   microtype:
@@ -48,6 +54,17 @@ before_begin_document:
   - \def\contributors{Roger Angel, Laird Close, Victor Gasho, Lori Harrison, Jared Males, Buddy Martin, Manny Montoya, et al.}
   # Define copyright claimer (document side watermark)
   - \def\claimer{\color{black!40}Nothing in this document is proprietary or confidential.}
+  # For defining any warning filters to show warnings of interest only
+  - \WarningFilter*{latex}{Reference `LastPage' on page}
+  - \WarningFilter*{hyperref}{Difference (\the\@tempcnta) between bookmark levels is}
+  - \WarningFilter*{latex}{Hyper reference on page}
+  # Define h and v badness levels for what is shown as warnings
+  - \hbadness=99999
+  - \vbadness=99999
+  - \sloppy
+  # Define column type for rvm to use
+  - \newcolumntype{L}{>{\centering\arraybackslash}m{3cm}}
+
 # For appending graphics only before the end of the document
 # Format -> image name: -> image title
 include_graphics:
@@ -60,7 +77,8 @@ after_begin_document:
   - \maketitle
   - \maketoc
 # For adding the traceability matrix at the end of the document
-traceability_matrix:
-  - False
+traceability_matrix: True
+# For adding the RVM at the end of the document. Name / location of rvm.tex needs to be in the same output directory of published latex files from doorstop.
+rvm: True
 
 

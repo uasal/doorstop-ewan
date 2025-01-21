@@ -898,6 +898,7 @@ class LaTeXPublisher(BasePublisher):
             wrapper = _add_comment(
                 wrapper, "No empty page needed before traceability matrix / graphics present."
             )
+            wrapper.append("")
         else:
             wrapper = _add_comment(
                 wrapper, "Adding empty page before traceability matrix"
@@ -908,11 +909,33 @@ class LaTeXPublisher(BasePublisher):
             wrapper.append("")
 
         # Include traceability matrix
-        if template_data["traceability_matrix"] == True:
+        if "traceability_matrix" in template_data:
             wrapper = _add_comment(wrapper, "Add traceability matrix.")
             wrapper.append("\\section{Traceability Matrix}")
             wrapper.append("\\input{traceability.tex}")
             wrapper = _add_comment(wrapper, "END traceability matrix.")
+            wrapper.append("")
+            wrapper.append("\\newpage")
+            wrapper.append("")
+        else:
+            wrapper = _add_comment(wrapper, "Traceability matrix import setting turned off in doorstop.yml. Skipping...")
+            wrapper.append("")
+
+        # Include rvm if setting is true
+        if "rvm" in template_data:
+            wrapper = _add_comment(wrapper, "Add rvm matrix.")
+            wrapper.append("\\begin{landscape}")
+            wrapper.append("\\section{Requirements Verification Matrix}")
+            wrapper.append("\\csvreader[longtable=LLLLLL,table head=\\caption{Requirement Verification Matrix for L4 Requirements.}\\\\")
+            wrapper.append("\\toprule\\bfseries UID & \\bfseries Name & \\bfseries Verification Plan & \\bfseries Method & \\bfseries Phase & \\bfseries Status \\\ \\midrule\\endhead")
+            wrapper.append("\\bottomrule\\endfoot,")
+            wrapper.append("late after line=\\\,")
+            wrapper.append("]{rvm.csv}{}{\\csvcoli & \\csvcolii & \\csvcoliii & \\csvcoliv & \\csvcolv & \\csvcolvi}")
+            wrapper.append("\\end{landscape}")
+            wrapper = _add_comment(wrapper, "END rvm.")
+            wrapper.append("")
+        else:
+            wrapper = _add_comment(wrapper, "RVM import setting turned off in doorstop.yml. Skipping...")
             wrapper.append("")
 
         # End the document command to be added
