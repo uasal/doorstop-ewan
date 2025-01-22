@@ -113,7 +113,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_ITEMFORMAT = "yaml"
     DEFAULT_VERIFICATION_METHODS = Text()
     DEFAULT_VERIFICATION_PLAN = Text()
-    DEFAULT_PHASE = Text()
+    DEFAULT_PHASES = Text()
     DEFAULT_STATUS = Text()
     DEFAULT_ARTIFACT = Text()
 
@@ -157,7 +157,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["ref"] = Item.DEFAULT_REF
         self._data["verification methods"] = Item.DEFAULT_VERIFICATION_METHODS # type: ignore
         self._data["verification plan"] = Item.DEFAULT_VERIFICATION_PLAN # type: ignore
-        self._data["phase"] = Item.DEFAULT_PHASE # type: ignore
+        self._data["phases"] = Item.DEFAULT_PHASES # type: ignore
         self._data["status"] = Item.DEFAULT_STATUS # type: ignore
         self._data["artifact"] = Item.DEFAULT_ARTIFACT # type: ignore
         self._data["references"] = None  # type: ignore
@@ -271,7 +271,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = Text(value)
             elif key == "status":
                 value = Text(value)
-            elif key == "phase":
+            elif key == "phases":
                 value = Text(value)
             elif key == "artifact":
                 value = Text(value)
@@ -404,7 +404,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = value.yaml  # type: ignore
             elif key == "status":
                 value = value.yaml  # type: ignore
-            elif key == "phase":
+            elif key == "phases":
                 value = value.yaml  # type: ignore
             elif key == "artifact":
                 value = value.yaml  # type: ignore
@@ -615,15 +615,15 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     @property  # type: ignore
     @auto_load
-    def phase(self):
+    def phases(self):
         """Get the requirements verification phase."""
-        return self._data["phase"]
+        return self._data["phases"]
 
-    @phase.setter  # type: ignore
+    @phases.setter  # type: ignore
     @auto_save
-    def phase(self, value):
+    def phases(self, value):
         """Set the requirements verification phase."""
-        self._data["phase"] = Text(value)
+        self._data["phases"] = Text(value)
 
     @property  # type: ignore
     @auto_load
