@@ -11,7 +11,7 @@ from typing import Any
 import openpyxl
 
 from doorstop import common, settings
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.builder import _get_tree
 from doorstop.core.document import Document
 from doorstop.core.item import Item
@@ -22,6 +22,7 @@ LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 _documents = []  # cache of unplaced documents
 
 log = common.logger(__name__)
+
 
 
 def import_file(path, document, ext=None, mapping=None, **kwargs):
@@ -150,8 +151,10 @@ def _file_csv(path, document, delimiter=",", mapping=None):
             row = []
             value: Any
             for value in _row:
+                if _row[0].startswith("#") or _row[0].startswith("  "):
+                    value = False
                 # convert string booleans
-                if isinstance(value, str):
+                elif isinstance(value, str):
                     if value.lower() == "true":
                         value = True
                     elif value.lower() == "false":
@@ -227,12 +230,16 @@ def _itemize(header, data, document, mapping=None):
     """
     log.info("converting rows to items...")
     log.debug("header: {}".format(header))
+
+    prev_uid = []
+
     for row in data:
         log.debug("row: {}".format(row))
 
         # Parse item attributes
         attrs = {}
         uid = None
+
         for index, value in enumerate(row):
             # Key lookup
             key = str(header[index]).lower().strip() if header[index] else ""
@@ -249,7 +256,15 @@ def _itemize(header, data, document, mapping=None):
 
             # Convert values for particular keys
             if key in ("uid", "id"):  # 'id' for backwards compatibility
-                uid = value
+                if value is not False:
+                    uid = value
+                    prev_uid.append(uid)
+                # Checks for duplicate UID's that were already entered from the same csv file.
+                if len(prev_uid) != len(set(prev_uid)):
+                    log.warning(" Duplicate UID in csv found: '" + str(uid) + "'.")
+                    print("DOORSTOP WARNING: Duplicate UID in csv found: '" + str(uid) + "'.")
+                    prev_uid = list(set(prev_uid))
+
             elif key == "links":
                 # split links into a list
                 attrs[key] = _split_list(value)
@@ -286,9 +301,9 @@ def _itemize(header, data, document, mapping=None):
 
         # Convert the row to an item
         if uid and uid != settings.PLACEHOLDER:
-            # Delete the old item
             try:
                 item = document.find_item(uid)
+                print("Updating entry for ("+ uid + ")...")
             except DoorstopError:
                 log.debug("not yet an item: {}".format(uid))
             else:

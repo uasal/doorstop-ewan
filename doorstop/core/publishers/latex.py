@@ -362,7 +362,7 @@ class LaTeXPublisher(BasePublisher):
                 split_line_text = line.split("[")
                 # Text before the link
                 text = str(split_line_text[0])
-                text = text.replace("_", "\_")
+                text = text.replace("_", "\\_")
                 # Rest of line / unformatted with no text part
                 remainder = str(split_line_text[1])
                 split_link_prefix = remainder.split("](")
@@ -370,15 +370,15 @@ class LaTeXPublisher(BasePublisher):
                 # Markdown URL prefix
                 url_prefix = "{" + str(split_link_prefix[0]) + "}"
                 link = "{" + str(split_link[0]) + "}"
-                url_prefix = url_prefix.replace("_", "\_")
-                rest_text = str(split_link[1]).replace("_", "\_")
-                output_line = text + "\href" + link + url_prefix + rest_text
+                url_prefix = url_prefix.replace("_", "\\_")
+                rest_text = str(split_link[1]).replace("_", "\\_")
+                output_line = text + "\\href" + link + url_prefix + rest_text
                 yield output_line
             elif "<br>" in line:
                 output_line = line.replace("<br> <br>", "\\par ").replace("<br><br>", "\\par ").replace("<br>", "\\par")
-                yield output_line.replace("^", "\^").replace("_", "\_")
+                yield output_line.replace("^", "\\^").replace("_", "\\_")
             else:
-                output_line = line.replace("^", "\^").replace("_", "\_")
+                output_line = line.replace("^", "\\^").replace("_", "\\_")
                 yield output_line
 
 
@@ -754,9 +754,9 @@ class LaTeXPublisher(BasePublisher):
                 t=_latex_convert(extract_prefix(self.document))
             )
         )
-        wrapper.append(
-            "\\def\\doctitle{{{n}}}".format(n=_latex_convert(doc_attributes["title"]))
-        )
+        #wrapper.append(
+        #    "\\def\\doctitle{{{n}}}".format(n=_latex_convert(doc_attributes["title"]))
+        #)
         wrapper.append(
             "\\def\\docref{{{n}}}".format(n=_latex_convert(doc_attributes["ref"]))
         )
@@ -870,28 +870,35 @@ class LaTeXPublisher(BasePublisher):
 
         graphics_present = False
         # To include graphics listed in yaml file after the beginning of the document but before the matrix.
-        for graphics, label in template_data["include_graphics"].items():
-            graphics_present = True
-            if label:
-                adjusted_label = str(label).replace("['", "").replace("']", "")
-                label_line = "\\section{" + adjusted_label + "}"
-            else:
-                label_line = "section{Image_1}"
-            wrapper.append(label_line)
-            wrapper.append("\\begin{figure}[ht!]")
-            wrapper.append("\\begin{center}")
-            wrapper.append("\\includegraphics[angle=90, height=20cm, width=\\textwidth]{" + graphics + "}")
-            wrapper.append("\\end{center}")
-            wrapper.append("\\end{figure}")
-            wrapper.append("\\newpage")
-        wrapper = _add_comment(
-            wrapper, "END data from the template configuration file."
-        )
+        if "include_graphics" in template_data:
+            for graphics, label in template_data["include_graphics"].items():
+                graphics_present = True
+                if label:
+                    adjusted_label = str(label).replace("['", "").replace("']", "")
+                    label_line = "\\section{" + adjusted_label + "}"
+                else:
+                    label_line = "section{Image_1}"
+                wrapper.append(label_line)
+                wrapper.append("\\begin{figure}[ht!]")
+                wrapper.append("\\begin{center}")
+                wrapper.append("\\includegraphics[angle=90, height=20cm, width=\\textwidth]{" + graphics + "}")
+                wrapper.append("\\end{center}")
+                wrapper.append("\\end{figure}")
+                wrapper.append("\\newpage")
+            wrapper = _add_comment(
+                wrapper, "END data from the template configuration file."
+            )
+        else:
+            wrapper = _add_comment(
+                wrapper, "No graphics information in template to be added to published document. Skipping..."
+            )
         wrapper.append("")
+
         if graphics_present:
             wrapper = _add_comment(
                 wrapper, "No empty page needed before traceability matrix / graphics present."
             )
+            wrapper.append("")
         else:
             wrapper = _add_comment(
                 wrapper, "Adding empty page before traceability matrix"
@@ -902,11 +909,33 @@ class LaTeXPublisher(BasePublisher):
             wrapper.append("")
 
         # Include traceability matrix
-        if self.matrix:
+        if "traceability_matrix" in template_data:
             wrapper = _add_comment(wrapper, "Add traceability matrix.")
             wrapper.append("\\section{Traceability Matrix}")
             wrapper.append("\\input{traceability.tex}")
             wrapper = _add_comment(wrapper, "END traceability matrix.")
+            wrapper.append("")
+            wrapper.append("\\newpage")
+            wrapper.append("")
+        else:
+            wrapper = _add_comment(wrapper, "Traceability matrix import setting turned off in doorstop.yml. Skipping...")
+            wrapper.append("")
+
+        # Include rvm if setting is true
+        if "rvm" in template_data:
+            wrapper = _add_comment(wrapper, "Add rvm matrix.")
+            wrapper.append("\\begin{landscape}")
+            wrapper.append("\\section{Requirements Verification Matrix}")
+            wrapper.append("\\csvreader[longtable=LLLLLL,table head=\\caption{Requirement Verification Matrix for L4 Requirements.}\\\\")
+            wrapper.append("\\toprule\\bfseries UID & \\bfseries Name & \\bfseries Verification Plan & \\bfseries Method & \\bfseries Phase & \\bfseries Status \\\ \\midrule\\endhead")
+            wrapper.append("\\bottomrule\\endfoot,")
+            wrapper.append("late after line=\\\,")
+            wrapper.append("]{rvm.csv}{}{\\csvcoli & \\csvcolii & \\csvcoliii & \\csvcoliv & \\csvcolv & \\csvcolvi}")
+            wrapper.append("\\end{landscape}")
+            wrapper = _add_comment(wrapper, "END rvm.")
+            wrapper.append("")
+        else:
+            wrapper = _add_comment(wrapper, "RVM import setting turned off in doorstop.yml. Skipping...")
             wrapper.append("")
 
         # End the document command to be added

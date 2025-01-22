@@ -111,6 +111,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
     DEFAULT_ITEMFORMAT = "yaml"
+    DEFAULT_VERIFICATION_METHODS = Text()
+    DEFAULT_VERIFICATION_PLAN = Text()
+    DEFAULT_PHASE = Text()
+    DEFAULT_STATUS = Text()
+    DEFAULT_ARTIFACT = Text()
 
     def __init__(self, document, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
@@ -150,6 +155,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["text"] = Item.DEFAULT_TEXT
         self._data["notes"] = Item.DEFAULT_NOTES
         self._data["ref"] = Item.DEFAULT_REF
+        self._data["verification methods"] = Item.DEFAULT_VERIFICATION_METHODS # type: ignore
+        self._data["verification plan"] = Item.DEFAULT_VERIFICATION_PLAN # type: ignore
+        self._data["phase"] = Item.DEFAULT_PHASE # type: ignore
+        self._data["status"] = Item.DEFAULT_STATUS # type: ignore
+        self._data["artifact"] = Item.DEFAULT_ARTIFACT # type: ignore
         self._data["references"] = None  # type: ignore
         self._data["links"] = set()  # type: ignore
         if settings.ENABLE_HEADERS:
@@ -259,6 +269,16 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = Text(value)
             elif key == "notes":
                 value = Text(value)
+            elif key == "status":
+                value = Text(value)
+            elif key == "phase":
+                value = Text(value)
+            elif key == "artifact":
+                value = Text(value)
+            elif key == "verification methods":
+                value = Text(value)
+            elif key == "verification plan":
+                value = Text(value)
             elif key == "ref":
                 value = value.strip()
             elif key == "references":
@@ -296,7 +316,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             # Parse YAML data from text
             data = common.load_yaml(text, self.path)
         else:
-            msg = "unknwon item format detected during load: {}({})".format(
+            msg = "unknown item format detected during load: {}({})".format(
                 self.uid, self.itemformat
             )
             raise DoorstopError(msg) from None
@@ -323,7 +343,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             # Dump the data to YAML
             text = self._dump(data)
         else:
-            msg = "unknwon item format detected during save: {}({})".format(
+            msg = "unknown item format detected during save: {}({})".format(
                 self.uid, self.itemformat
             )
             raise DoorstopError(msg) from None
@@ -382,6 +402,16 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = value.yaml  # type: ignore
             elif key == "notes":
                 value = value.yaml  # type: ignore
+            elif key == "status":
+                value = value.yaml  # type: ignore
+            elif key == "phase":
+                value = value.yaml  # type: ignore
+            elif key == "artifact":
+                value = value.yaml  # type: ignore
+            elif key == "verification methods":
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
+            elif key == "verification plan":
+                value = _convert_to_yaml(0, len(key) + 2, value)  # type: ignore
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
             data[key] = value
@@ -526,13 +556,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @property  # type: ignore
     @auto_load
     def short_name(self):
-        """Get the item's text."""
+        """Get the item's short name."""
         return self._data["short name"]
 
     @short_name.setter  # type: ignore
     @auto_save
     def short_name(self, value):
-        """Set the item's text."""
+        """Set the item's short name."""
         self._data["short name"] = Text(value)
 
     @property  # type: ignore
@@ -550,14 +580,74 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @property  # type: ignore
     @auto_load
     def notes(self):
-        """Get the item's text."""
+        """Get the item's notes."""
         return self._data["notes"]
 
     @notes.setter  # type: ignore
     @auto_save
     def notes(self, value):
-        """Set the item's text."""
+        """Set the item's notes."""
         self._data["notes"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def verification_methods(self):
+        """Get the requirement verification methods"""
+        return self._data["verification methods"]
+
+    @verification_methods.setter  # type: ignore
+    @auto_save
+    def verification_methods(self, value):
+        """Set the requirement verification methods"""
+        self._data["verification methods"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def verification_plan(self):
+        """Get requirements verification plan"""
+        return self._data["verification plan"]
+
+    @verification_plan.setter  # type: ignore
+    @auto_save
+    def verification_plan(self, value):
+        """Set requirements verification plan"""
+        self._data["verification plan"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def phase(self):
+        """Get the requirements verification phase."""
+        return self._data["phase"]
+
+    @phase.setter  # type: ignore
+    @auto_save
+    def phase(self, value):
+        """Set the requirements verification phase."""
+        self._data["phase"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def status(self):
+        """Get the requirements verification status."""
+        return self._data["status"]
+
+    @status.setter  # type: ignore
+    @auto_save
+    def status(self, value):
+        """Set the requirements verification status."""
+        self._data["status"] = Text(value)
+
+    @property  # type: ignore
+    @auto_load
+    def artifact(self):
+        """Get the item's artifacts"""
+        return self._data["artifact"]
+
+    @artifact.setter  # type: ignore
+    @auto_save
+    def artifact(self, value):
+        """Set the item's artifacts."""
+        self._data["artifact"] = Text(value)
 
     @property  # type: ignore
     @auto_load
